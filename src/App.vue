@@ -1,15 +1,16 @@
 <template>
   <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js App"/>
+  <LoginView msg="Please log in"/>
 </template>
 
 <script>
-import HelloWorld from './components/HelloWorld.vue'
+import LoginView from './components/LoginView.vue'
 
 export default {
   name: 'App',
   components: {
-    HelloWorld
+    // eslint-disable-next-line vue/no-unused-components
+    LoginView
   }
 }
 </script>
