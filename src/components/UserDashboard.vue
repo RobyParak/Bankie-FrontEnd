@@ -1,10 +1,11 @@
 <template>
   <div class="q-pa-md" style="padding-left:4em; padding-top: 2px">
-    <q-btn class="q-ml-auto" style="background: #f919a9; color: white" label="Logout" @click="logout"/>
+    <q-btn class="q-ml-auto" id="logoutBtn" style="background: #f919a9; color: white" label="Logout" @click="logout"/>
     <h3>Dashboard</h3>
     <h4 style="text-align: left;">Welcome, {{ userName }}!</h4>
 
     <h5 style="text-align: left;">Current Account Balance: {{ balance }}</h5>
+
     <q-table
         class="my-sticky-header-table"
         flat bordered
@@ -13,8 +14,9 @@
         :columns="columns"
         row-key="name"
     />
+    <q-btn class="q-ml-auto" id="transactionButton" label="Make a new transaction" to="/transactions"/>
 
-      <h5 style="text-align: left;">Savings Account Balance: {{ balance }}</h5>
+    <h5 style="text-align: left;">Savings Account Balance: {{ balance }}</h5>
     <q-table
         class="my-sticky-header-table"
         flat bordered
@@ -66,20 +68,35 @@ export default {
   },
   methods: {
     logout() {
-      // perform logout action here
+      // Clear session data and route to log in page
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      this.$router.push('/login');
     }
-  }
+  },
 }
 </script>
 
 <style scoped>
-.q-btn {
+#logoutBtn {
   border-radius: 20px;
   padding: 8px 16px;
   position:absolute;
   top: 1em;
   right:1em;
 }
+#transactionButton {
+  border-radius: 20px;
+  padding: 8px 16px;
+  position: relative;
+  display: flex;
+}
+
+.my-sticky-header-table {
+  display: flex;
+}
+
+
 </style>
 
 <style lang="sass">
