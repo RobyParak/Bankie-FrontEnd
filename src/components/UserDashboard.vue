@@ -1,33 +1,44 @@
 <template>
-  <div class="q-pa-md" style="padding-left:4em; padding-top: 2px">
-    <q-btn class="q-ml-auto" id="logoutBtn" style="background: #f919a9; color: white" label="Logout" @click="logout"/>
+  <q-btn class="q-ml-auto" id="logoutBtn" style="background: #f919a9; color: white" label="Logout" @click="logout"/>
+  <q-layout view="hHh Lpr fFf">
     <h3>Dashboard</h3>
-    <h4 style="text-align: left;">Welcome, {{ userName }}!</h4>
+      <h4 style="text-align: left; padding-left: 1em">Welcome, {{ userName }}!</h4>
 
-    <h5 style="text-align: left;">Current Account Balance: {{ balance }}</h5>
 
-    <q-table
-        class="my-sticky-header-table"
-        flat bordered
-        title="Current Account"
-        :rows="currentAccountRows"
-        :columns="columns"
-        row-key="name"
-    />
-    <q-btn class="q-ml-auto" id="transactionButton" label="Make a new transaction" to="/transactions"/>
+    <q-page-container>
+      <q-splitter v-model="splitterPosition" class="my-splitter">
+        <q-page class="q-pa-md" style="padding-left: 5em" :style="{ width: '80%' }">
+          <h5 style="text-align: left;">Current Account Balance: {{ balance }}</h5>
+          <q-table
+              class="my-sticky-header-table"
+              flat bordered
+              title="Current Account"
+              :rows="currentAccountRows"
+              :columns="columns"
+              row-key="name"
+          />
 
-    <h5 style="text-align: left;">Savings Account Balance: {{ balance }}</h5>
-    <q-table
-        class="my-sticky-header-table"
-        flat bordered
-        title="Savings Account"
-        :rows="savingsAccountRows"
-        :columns="columns"
-        row-key="name"
-    />
-  </div>
+          <h5 style="text-align: left;">Savings Account Balance: {{ balance }}</h5>
+          <q-table
+              class="my-sticky-header-table"
+              flat bordered
+              title="Savings Account"
+              :rows="savingsAccountRows"
+              :columns="columns"
+              row-key="name"
+          />
+        </q-page>
+        <q-page class="q-pa-md" style="alignment: center; padding-right: 3em;" :style="{ width: '20%' }">
+
+          <q-input filled v-model="filterInput" label="Search" placeholder="Type to search transaction" :dense="dense" style="padding:1em; width: 300px" />
+          <q-btn class="q-ml-auto" id="transactionButton" label="Make a new transaction" to="/transactions"/>
+        </q-page>
+      </q-splitter>
+    </q-page-container>
+  </q-layout>
 
 </template>
+
 
 <script>
 import { QBtn, QTable } from 'quasar'
@@ -39,9 +50,11 @@ export default {
     QTable
   },
   data() {
+
     return {
       userName: 'Soft Kitty',
       balance: 1000.00,
+      splitterPosition: 0,
       currentAccountRows: [
         {
           date: '2023-05-01',
@@ -88,14 +101,8 @@ export default {
 #transactionButton {
   border-radius: 20px;
   padding: 8px 16px;
-  position: relative;
-  display: flex;
+  position: center;
 }
-
-.my-sticky-header-table {
-  display: flex;
-}
-
 
 </style>
 
