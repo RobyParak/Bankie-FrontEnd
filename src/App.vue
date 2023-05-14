@@ -1,15 +1,15 @@
 <template>
   <img alt="Vue logo" src="./assets/logo.png" class="logo">
-  <ATM msg="Please log in"/>
+  <LoginView msg="Please log in"/>
 </template>
 
 <script>
-import ATM from './components/ATM.vue'
+import LoginView from './components/LoginView.vue'
 
 export default {
   name: 'App',
   components: {
-    ATM
+    LoginView
   }
 }
 </script>
