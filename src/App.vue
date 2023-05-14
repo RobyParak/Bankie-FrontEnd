@@ -1,16 +1,15 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png" class="logo">
-  <LoginView msg="Please log in"/>
+  <div id="app">
+    <img alt="Vue logo" src="./assets/logo.png" class="logo">
+    <router-view></router-view>
+  </div>
 </template>
 
 <script>
-import LoginView from './components/LoginView.vue'
+
 
 export default {
-  name: 'App',
-  components: {
-    LoginView
-  }
+  name: 'App'
 }
 </script>
 
