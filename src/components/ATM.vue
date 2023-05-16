@@ -5,7 +5,7 @@
         v-model="model"
         spread
         no-caps
-        toggle-color="purple"
+        toggle-color="indigo-11"
         color="white"
         text-color="black"
         :options="[
@@ -59,8 +59,15 @@
     </q-banner>
 </template>
 <script>
+import { ref } from 'vue'
 export default {
-  name: "ATM.vue"
+  name: "ATM.vue",
+  setup () {
+    return {
+      model: ref('one'),
+      secondModel: ref('one')
+    }
+  },
 }
 
 </script>
@@ -68,4 +75,9 @@ export default {
 <style scoped>
 
 
+</style>
+
+<style lang="sass" scoped>
+.my-custom-toggle
+  border: 1px solid #027be3
 </style>
