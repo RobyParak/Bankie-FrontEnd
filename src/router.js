@@ -1,7 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import LoginView from '@/components/LoginView.vue';
 import UserDashboard from '@/components/UserDashboard.vue';
-import ATM from '@/components/ATM.vue';
+import Transaction from '@/components/TransactionView.vue';
+import EmployeeDashboard from '@/components/EmployeeDashboard.vue';
 
 const routes = [
     {
@@ -19,9 +20,14 @@ const routes = [
         component: UserDashboard
     },
     {
-        path: '/atm',
-        name: 'atm',
-        component: ATM
+        path: '/TransactionView',
+        name: 'TransactionView',
+        component: Transaction
+    },
+    {
+        path: '/EmployeeDashboard',
+        name: 'EmployeeDashboard',
+        component: EmployeeDashboard
     }
 ];
 
