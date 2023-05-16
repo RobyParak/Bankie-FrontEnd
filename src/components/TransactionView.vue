@@ -61,7 +61,7 @@
 <script>
 import { ref } from 'vue'
 export default {
-  name: "ATM.vue",
+  name: "TransactionView.vue",
   setup () {
     return {
       model: ref('one'),
