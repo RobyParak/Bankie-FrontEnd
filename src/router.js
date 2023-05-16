@@ -20,11 +20,6 @@ const routes = [
         component: UserDashboard
     },
     {
-        path: '/employeeDashboard',
-        name: 'employeeDashboard',
-        component: EmployeeDashboard
-    },
-    {
         path: '/register',
         name: 'register',
         component: RegisterUser
