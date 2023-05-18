@@ -27,8 +27,8 @@ const routes = [
         component: RegisterUser
     },
     {
-        path: '/TransactionView',
-        name: 'TransactionView',
+        path: '/Transaction',
+        name: 'Transaction',
         component: TransactionView
     },
     {

@@ -35,8 +35,9 @@
             label="BSN"
             placeholder="BSN"
             lazy-rules
-            :rules="[val => val && val.length === 9 || 'Please enter a valid BSN']"
+            :rules="[val => val && (val.length === 8 || val.length === 9) || 'Please enter a valid BSN']"
         />
+
         <q-input
             filled
             v-model="phone"
@@ -56,7 +57,7 @@
 
 
         <div>
-          <q-btn  class="q-ml-auto" style="background: #f919a9; color: white" label="Register" type="submit" />
+          <q-btn  class="q-ml-auto" id="registerBtn" label="Register" type="submit" />
           <q-btn label="Reset" type="reset" color="primary" flat class="q-ml-sm" />
         </div>
       </q-form>
@@ -132,5 +133,8 @@ export default {
 
 
 <style scoped>
-
+#registerBtn {
+  background: #f919a9;
+  color: white
+}
 </style>
