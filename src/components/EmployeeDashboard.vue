@@ -253,6 +253,11 @@
 <!-- DEACTIVATE BANK ACCOUNT -->
         <q-tab-panel name="delAccount">
           <div class="text-h6">Deactivate Bank Account</div>
+          <q-input outlined bottom-slots v-model="text" label="Search Bank Accounts" counter maxlength="30" :dense="dense">
+  <template v-slot:append>
+    <q-icon name="search" />
+  </template>
+</q-input>
           <q-table
       flat bordered
       :rows="bankAccountRows"
