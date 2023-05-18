@@ -7,7 +7,6 @@
     <div class="q-gutter-y-md column" style="max-width: 400px;">
     <q-form
         @submit="onSubmit"
-        @reset="onReset"
         class="q-gutter-md"
     >
       <q-input
@@ -15,10 +14,10 @@
           v-model="email"
           type="email"
           label="Email"
+          placeholder="Email"
           lazy-rules
-          :rules="[ val => val && val.length > 0 || 'Please enter your email address' ]"
+          :rules="[val => val && /.+@.+\..+/.test(val) || 'Please enter a valid email']"
       />
-
 
       <q-input
           filled
