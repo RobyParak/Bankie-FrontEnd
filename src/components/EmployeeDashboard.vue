@@ -243,12 +243,12 @@
       :columns="usersColumns"
       row-key="Fname"
       selection="single"
-      v-model:selected="selected"
+      v-model:selected="selectedUser"
     />
     <div class="q-mt-md">
-      Selected: {{ JSON.stringify(selected) }}
+      Selected: {{ JSON.stringify(selectedUser) }}
     </div>
-    <q-btn  class="q-ml-auto" style="background: #f919a9; color: white" label="Add New Bank Account" type="submit" />
+    <q-btn  class="q-ml-auto" style="background: #800000; color: white" label="Delete User" type="submit" />
         </q-tab-panel>
 <!-- DEACTIVATE BANK ACCOUNT -->
         <q-tab-panel name="delAccount">
@@ -259,12 +259,12 @@
       :columns="bankAccountColumns"
       row-key="iban"
       selection="single"
-      v-model:selected="selected"
+      v-model:selected="selectedBankAccount"
     />
     <div class="q-mt-md">
-      Selected: {{ JSON.stringify(selected) }}
+      Selected: {{ JSON.stringify(selectedBankAccount) }}
     </div>
-    <q-btn  class="q-ml-auto" style="background: #f919a9; color: white" label="Add New Bank Account" type="submit" />
+    <q-btn  class="q-ml-auto" style="background: #800000; color: white" label="Deactivate Bank Account" type="submit" />
         </q-tab-panel>
 
       </q-tab-panels>
@@ -340,7 +340,8 @@ export default {
       usersColumns,
       usersRows,
       model: ref('one'),
-      selected: ref([]),
+      selectedUser: ref([]),
+      selectedBankAccount: ref([]),
     }
   },
 }
