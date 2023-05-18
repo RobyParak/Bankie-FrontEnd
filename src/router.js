@@ -4,6 +4,7 @@ import UserDashboard from '@/components/UserDashboard.vue';
 import TransactionView from '@/components/TransactionView.vue';
 import RegisterUser from "@/components/RegisterUser";
 import EmployeeDashboard from "@/components/EmployeeDashboard";
+import test from "@/components/testPage.vue";
 
 const routes = [
     {
@@ -34,6 +35,11 @@ const routes = [
         path: '/EmployeeDashboard',
         name: 'EmployeeDashboard',
         component: EmployeeDashboard
+    },
+    {
+        path: '/testPage',
+        name: 'testPage',
+        component: test
     }
 ];
 
