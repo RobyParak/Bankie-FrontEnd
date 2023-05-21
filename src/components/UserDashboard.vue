@@ -21,29 +21,17 @@
               v-model="user.firstName"
               label="First Name"
               placeholder="First Name"
-              @click="openPopup('lastName')"
           />
-          <q-popup-edit
-              v-model="showPopup.firstName"
-              buttons
-              label-set="Save"
-              label-cancel="Close"
-              :validate="validateFirstName"
-              @hide="cancelPopup('firstName')"
-              v-slot="scope"
-          >
-            <q-input
-                v-model.trim="user.firstName"
-                filled
-                label="First Name"
-                placeholder="First Name"
-                :error="errorFirstName"
-                :error-message="errorMessageFirstName"
-                dense
-                autofocus
-                @keyup.enter="scope.set"
-            />
-          </q-popup-edit>
+          <q-popup-edit v-model="showPopup.firstName" buttons v-slot="scope">
+              <q-input v-model="user.firstName"
+                       dense
+                       autofocus
+                       counter
+                       label="Last Name"
+                       placeholder="Last Name"
+                       :validate="validateName"
+                       @keyup.enter="scope.set" />
+            </q-popup-edit>
         </div>
         <div>
           <q-input
@@ -51,26 +39,16 @@
               v-model="user.lastName"
               label="Last Name"
               placeholder="Last Name"
-              @click="openPopup('firstName')"
           />
-          <q-popup-edit
-              v-model="showPopup.lastName"
-              buttons
-              label-set="Save"
-              label-cancel="Close"
-              :validate="validateLastName"
-              @hide="cancelPopup('lastName')"
-              v-slot="scope"
-          >
+          <q-popup-edit  v-model="showPopup.lastName" buttons v-slot="scope">
             <q-input
-                v-model.trim="user.lastName"
-                filled
-                label="Last Name"
-                placeholder="Last Name"
-                :error="errorLastName"
-                :error-message="errorMessageLastName"
+                v-model="user.lastName"
                 dense
                 autofocus
+                counter
+                label="Last Name"
+                placeholder="Last Name"
+                :validate="validateName"
                 @keyup.enter="scope.set"
             />
           </q-popup-edit>
@@ -81,28 +59,19 @@
               v-model="user.email"
               label="Email"
               placeholder="Email"
-              @click="openPopup('email')"
           />
 
-          <q-popup-edit
-              v-model="showPopup.email"
-              buttons
-              label-set="Save"
-              label-cancel="Close"
-              :validate="validateEmailAddress"
-              @hide="cancelPopup('email')"
-              v-slot="scope"
-          >
+          <q-popup-edit  v-model="showPopup.email" buttons v-slot="scope">
             <q-input
-                v-model.trim="user.email"
-                filled
-                label="Email Address"
-                placeholder="Email Address"
-                :error="errorEmailAddress"
-                :error-message="errorMessageEmailAddress"
+                v-model="user.email"
                 dense
                 autofocus
+                counter
+                label="Email"
+                placeholder="Email"
+                :validate="validateEmailAddress"
                 @keyup.enter="scope.set"
+                @input="scope.modelValue = $event.target.value"
             />
           </q-popup-edit>
         </div>
@@ -112,27 +81,19 @@
               v-model="user.phone"
               label="Phone Number"
               placeholder="Phone Number"
-              @click="openPopup('phone')"
           />
-          <q-popup-edit
-              v-model="showPopup.phone"
-              buttons
-              label-set="Save"
-              label-cancel="Close"
-              :validate="validatePhoneNumber"
-              @hide="cancelPopup('phone')"
-              v-slot="scope"
-          >
+          <q-popup-edit  v-model="showPopup.lastName" buttons v-slot="scope">
             <q-input
-                v-model.trim="user.phone"
-                filled
-                label="Phone Number"
-                placeholder="Phone Number"
-                :error="errorPhoneNumber"
-                :error-message="errorMessagePhoneNumber"
+                v-model="user.phone"
                 dense
                 autofocus
+                counter
+                label="Phone Number"
+                placeholder="Phone Number"
+                @click="openPopup('phone')"
+                :validate="validatePhoneNumber"
                 @keyup.enter="scope.set"
+                @input="scope.modelValue = $event.target.value"
             />
           </q-popup-edit>
         </div>
@@ -242,10 +203,7 @@ export default {
     toggleUserForm() {
       this.showUserForm = !this.showUserForm
     },
-    openPopup(field) {
-      this.showPopup[field] = true
-    },
-    validateFirstName(value) {
+    validateName(value) {
       if (!value || value.length === 0) {
         this.errorFirstName = true;
         this.errorMessageFirstName = 'Please enter your first name';
@@ -253,16 +211,6 @@ export default {
       }
       this.errorFirstName = false;
       this.errorMessageFirstName = '';
-      return true;
-    },
-    validateLastName(value) {
-      if (!value || value.length === 0) {
-        this.errorLastName = true;
-        this.errorMessageLastName = 'Please enter your last name';
-        return false;
-      }
-      this.errorLastName = false;
-      this.errorMessageLastName = '';
       return true;
     },
     validateEmailAddress(value) {
@@ -284,9 +232,6 @@ export default {
       this.errorPhoneNumber = false;
       this.errorMessagePhoneNumber = '';
       return true;
-    },
-    cancelPopup(field) {
-      this.showPopup[field] = false; // Hide the corresponding popup when canceled
     },
   },
   computed: {
