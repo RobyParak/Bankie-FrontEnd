@@ -3,7 +3,7 @@
     <h3>Welcome to Banky!</h3>
     <h5>Register as a new user or <router-link to="/login">log in</router-link></h5>
   </div>
-  <div class="q-pa-md" style="justify-content: center; padding-left: 3em; max-width: 80%;">
+  <div class="q-pa-md" style="justify-self: center; padding-left: 20em; max-width: 80%;">
       <q-form @submit="onSubmit" @reset="onReset" class="q-gutter-md">
         <q-input
             filled
