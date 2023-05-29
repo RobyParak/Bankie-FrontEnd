@@ -65,7 +65,6 @@ export default {
     })
       .then(response => response.json())
       .then(data => {
-        // Assuming the JWT token is returned in the response as 'token'
         const token = data.token;
 
         // Store the token in local storage or another suitable storage method
@@ -74,7 +73,6 @@ export default {
         this.$router.push('/UserDashboard'); // STILL NEED TO CHECK FOR ROLE AND REROUTE
       })
       .catch(error => {
-        // Handle the error
         console.error('Login failed:', error);
       });
   }
