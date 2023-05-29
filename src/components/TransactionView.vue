@@ -11,8 +11,8 @@
         align="justify"
         narrow-indicator
       >
-        <q-tab name="normal_transaction" label="Transaction" />
-        <q-tab name="atm_transaction" label="ATM" />
+        <q-tab name="normal_transaction" label="Transaction" :class="{ 'active-tab': tab === 'normal_transaction' }" />
+        <q-tab name="atm_transaction" label="ATM" :class="{ 'active-tab': tab === 'atm_transaction' }"/>
       </q-tabs>
 
       <q-separator />
@@ -64,15 +64,11 @@
             <div class="q-gutter-sm">
               <q-radio
                 v-model="shape"
-                checked-icon="task_alt"
-                unchecked-icon="panorama_fish_eye"
                 val="withdraw"
                 label="Withdraw"
               />
               <q-radio
                 v-model="shape"
-                checked-icon="task_alt"
-                unchecked-icon="panorama_fish_eye"
                 val="deposit"
                 label="Deposit"
               />
@@ -210,4 +206,14 @@ export default {
 <style lang="sass" scoped>
 .my-custom-toggle
   border: 1px solid #027be3
+</style>
+<style scoped>
+/* Add the following styles */
+.active-tab {
+  background-color: #ccaeff; /* Replace with your desired background color */
+}
+
+.tab-content {
+  background-color: #ffffff; /* Replace with your desired background color */
+}
 </style>
