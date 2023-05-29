@@ -35,6 +35,7 @@
 
 <script>
 import { QBtn } from "quasar";
+import api from '../../axios';
 export default {
   name: 'LoginButton',
   components: {
@@ -47,36 +48,33 @@ export default {
     };
   },
   methods: {
-  onSubmit() {
-    const loginData = {
-      email: this.email,
-      password: this.password
-    };
+    onSubmit() {
+      const loginData = {
+        email: this.email,
+        password: this.password
+      };
 
-    // Send the login request to your backend API
-    // and handle the response to obtain the JWT token
+      // Use the Axios service to make the login request
+      api.login(loginData)
+        .then(response => {
+          const token = response.data.token;
+          localStorage.setItem('token', token);
 
-    fetch('/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(loginData)
-    })
-      .then(response => response.json())
-      .then(data => {
-        const token = data.token;
-
-        // Store the token in local storage or another suitable storage method
-        localStorage.setItem('token', token);
-
-        this.$router.push('/UserDashboard'); // STILL NEED TO CHECK FOR ROLE AND REROUTE
-      })
-      .catch(error => {
-        console.error('Login failed:', error);
-      });
+          const role = response.data.role;
+          // this probably doesnt work
+          if (role === 'user') {
+            this.$router.push('/userDashboard');
+          } else if (role === 'employee') {
+            this.$router.push('/employeeDashboard');
+          } else {
+            console.error('Unknown role:', role);
+          }
+        })
+        .catch(error => {
+          console.error('Login failed:', error);
+        });
+    }
   }
-}
 };
 </script>
 
