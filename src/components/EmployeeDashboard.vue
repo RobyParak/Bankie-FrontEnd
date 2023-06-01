@@ -217,7 +217,8 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import axios from 'axios';
+import { ref, onMounted } from 'vue';
 
 export default {
   name: 'UserDashboard',
@@ -228,7 +229,7 @@ export default {
       { name: 'Balance', label: 'Balance', field: 'balance' },
       { name: 'AbsoluteLimit', label: 'Absolute Limit (editable)', field: 'absoluteLimit' },
       { name: 'Status', label: 'Status', field: 'status' },
-    ]
+    ];
 
     const bankAccountRows = ref([
       {
@@ -245,7 +246,7 @@ export default {
         absoluteLimit: 1000,
         status: 'Active',
       },
-    ])
+    ]);
 
     const usersColumns = [
       { name: 'FirstName', align: 'left', label: 'First Name', field: 'Fname' },
@@ -255,28 +256,23 @@ export default {
       { name: 'DailyLimit', label: 'Daily Limit', field: 'Dlimit' },
       { name: 'TransactionLimit', label: 'Transaction Limit', field: 'Tlimit' },
       { name: 'Role', label: 'Role', field: 'Role' },
-    ]
+    ];
 
-    const usersRows = ref([
-      {
-        Fname: 'John',
-        Lname: 'Doe',
-        phone: 12345678,
-        email: 'email@fakeemail.com',
-        Dlimit: 4.0,
-        Tlimit: 87,
-        Role: 'user',
-      },
-      {
-        Fname: 'John',
-        Lname: 'Doetoo',
-        phone: 12345678,
-        email: 'email@fakeemail.com',
-        Dlimit: 4.0,
-        Tlimit: 87,
-        Role: 'customer',
-      },
-    ])
+    const usersRows = ref([]);
+
+    const getAllUsers = async () => {
+      try {
+        const response = await axios.get('/users');
+        usersRows.value = response.data;
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    onMounted(() => {
+      getAllUsers();
+    });
+
     return {
       bankAccountColumns,
       panel: ref('edit'),
@@ -286,10 +282,11 @@ export default {
       model: ref('one'),
       selectedUser: ref([]),
       selectedBankAccount: ref([]),
-    }
+    };
   },
 }
 </script>
+
 <style lang="sass" scoped>
 .my-custom-toggle
   border: 1px solid #027be3

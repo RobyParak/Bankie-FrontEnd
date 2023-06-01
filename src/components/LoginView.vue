@@ -28,6 +28,7 @@
             <q-btn class="q-ml-auto" style="background: #f919a9; color: white" label="Login" type="submit" />
           </div>
         </q-form>
+      <div v-if="loginError" class="q-mt-md" style="color: red;">{{ loginError }}</div>
     </div>
   </div>
 </template>
@@ -63,20 +64,22 @@ export default {
 
           // Decode the token to extract the role
           const decodedToken = jwtDecode(token);
-          const role = decodedToken.role;
+          const role = decodedToken.auth;
 
           // Use the role to navigate to different routes or open different windows
-          if (role === 'user') {
+          //TODO something for users without an account - maybe another landing page?
+          if (role === 'Customer') {
             this.$router.push('/userDashboard');
-          } else if (role === 'employee') {
+          } else if (role === 'Employee') {
             this.$router.push('/employeeDashboard');
           } else {
             console.error('Unknown role:', role);
           }
         })
-        .catch(error => {
-          console.error('Login failed:', error);
-        });
+          .catch(error => {
+            this.loginError = 'Login failed. Please check your credentials.'; // Set the login error message
+            console.error('Login failed:', error);
+          });
     }
   }
 };

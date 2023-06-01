@@ -1,14 +1,37 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: 'http://localhost:8081'
+  baseURL: 'https://localhost:8081'
 });
 
+// Add an interceptor to set the token in the request headers
+// apiClient.interceptors.request.use(config => {
+//   const token = localStorage.getItem('token');
+//   if (token) {
+//     config.headers['Authorization'] = `Bearer ${token}`;
+//   }
+//   return config;
+// }, error => {
+//   return Promise.reject(error);
+// });
+
+// Enable CORS headers
+apiClient.interceptors.response.use(response => {
+  // Add CORS headers to the response
+  response.headers['Access-Control-Allow-Origin'] = 'http://localhost:8080';
+  response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE';
+  response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization';
+
+  return response;
+}, error => {
+  return Promise.reject(error);
+});
 export default {
   // User Login
   login(loginData) {
     return apiClient.post('/login', loginData);
   },
+
   // Get all users
   getAllUsers(params) {
     return apiClient.get('/users', { params });
@@ -39,14 +62,14 @@ export default {
     return apiClient.post('/bankaccounts', accountData);
   },
 
-  // Get account details by IBAN
-  getAccountById(accountIBAN) {
-    return apiClient.get(`/bankaccounts/${accountIBAN}`);
+  // Get account details
+  getAccountById(accountId) {
+    return apiClient.get(`/bankaccounts/${accountId}`);
   },
 
   // Perform a transaction
   performTransaction(transactionData) {
-    return apiClient.put('/transactions', transactionData);
+    return apiClient.post('/transactions', transactionData);
   },
 
   // Get transaction history
