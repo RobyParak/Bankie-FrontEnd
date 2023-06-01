@@ -1,18 +1,24 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: 'http://localhost:8081'
+  baseURL: 'https://localhost:8081'
+});
+
+// Add an interceptor to set the token in the request headers
+apiClient.interceptors.request.use(config => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers['Authorization'] = `Bearer ${token}`;
+  }
+  return config;
+}, error => {
+  return Promise.reject(error);
 });
 
 export default {
   // User Login
   login(loginData) {
     return apiClient.post('/login', loginData);
-  },
-
-  // Refresh JWT Token
-  refreshAuthToken() {
-    return apiClient.post('/refresh');
   },
 
   // Get all users
