@@ -9,12 +9,6 @@ export default {
   login(loginData) {
     return apiClient.post('/login', loginData);
   },
-
-  // Refresh JWT Token
-  refreshAuthToken() {
-    return apiClient.post('/refresh');
-  },
-
   // Get all users
   getAllUsers(params) {
     return apiClient.get('/users', { params });
@@ -45,14 +39,14 @@ export default {
     return apiClient.post('/bankaccounts', accountData);
   },
 
-  // Get account details
-  getAccountById(accountId) {
-    return apiClient.get(`/bankaccounts/${accountId}`);
+  // Get account details by IBAN
+  getAccountById(accountIBAN) {
+    return apiClient.get(`/bankaccounts/${accountIBAN}`);
   },
 
   // Perform a transaction
   performTransaction(transactionData) {
-    return apiClient.post('/transactions', transactionData);
+    return apiClient.put('/transactions', transactionData);
   },
 
   // Get transaction history
