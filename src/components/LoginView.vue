@@ -35,6 +35,8 @@
 <script>
 import { QBtn } from "quasar";
 import api from '../../axios';
+import jwtDecode from 'jwt-decode';
+
 export default {
   name: 'LoginButton',
   components: {
@@ -59,8 +61,11 @@ export default {
           const token = response.data.token;
           localStorage.setItem('token', token);
 
-          const role = response.data.role;
-          // this probably doesnt work
+          // Decode the token to extract the role
+          const decodedToken = jwtDecode(token);
+          const role = decodedToken.role;
+
+          // Use the role to navigate to different routes or open different windows
           if (role === 'user') {
             this.$router.push('/userDashboard');
           } else if (role === 'employee') {
