@@ -218,8 +218,6 @@
 
 <script>
 import { ref } from 'vue'
-import axios from 'axios';
-import jwtDecode from 'jsonwebtoken';
 
 export default {
   name: 'UserDashboard',
