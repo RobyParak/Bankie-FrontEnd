@@ -24,9 +24,6 @@
           lazy-rules
           :rules="[val => val && val.length > 0 || 'Please enter your password']"
         />
-
-          <q-input v-model="email" label="Email"></q-input>
-          <q-input v-model="password" label="Password" type="password"></q-input>
           <div class="q-mt-md">
             <q-btn class="q-ml-auto" style="background: #f919a9; color: white" label="Login" type="submit" />
           </div>
