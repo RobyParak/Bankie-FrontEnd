@@ -12,92 +12,66 @@
       />
     </div>
 
-    <div class="q-pa-md" v-if="showUserForm" style="max-width: 300px; padding-left: 3em">
-      <div class="cursor-pointer">
-        <div class="q-gutter-y-md column">
-        <div>
-          <q-input
-              filled
-              v-model="user.firstName"
-              label="First Name"
-              placeholder="First Name"
-          />
-          <q-popup-edit v-model="showPopup.firstName" buttons v-slot="scope">
-              <q-input v-model="user.firstName"
-                       dense
-                       autofocus
-                       counter
-                       label="Last Name"
-                       placeholder="Last Name"
-                       :validate="validateName"
-                       @keyup.enter="scope.set" />
-            </q-popup-edit>
-        </div>
-        <div>
-          <q-input
-              filled
-              v-model="user.lastName"
-              label="Last Name"
-              placeholder="Last Name"
-          />
-          <q-popup-edit  v-model="showPopup.lastName" buttons v-slot="scope">
-            <q-input
-                v-model="user.lastName"
-                dense
-                autofocus
-                counter
-                label="Last Name"
-                placeholder="Last Name"
-                :validate="validateName"
-                @keyup.enter="scope.set"
-            />
-          </q-popup-edit>
-        </div>
-        <div>
-          <q-input
-              filled
-              v-model="user.email"
-              label="Email"
-              placeholder="Email"
-          />
-
-          <q-popup-edit  v-model="showPopup.email" buttons v-slot="scope">
-            <q-input
-                v-model="user.email"
-                dense
-                autofocus
-                counter
-                label="Email"
-                placeholder="Email"
-                :validate="validateEmailAddress"
-                @keyup.enter="scope.set"
-                @input="scope.modelValue = $event.target.value"
-            />
-          </q-popup-edit>
-        </div>
-        <div>
-          <q-input
-              filled
-              v-model="user.phone"
-              label="Phone Number"
-              placeholder="Phone Number"
-          />
-          <q-popup-edit  v-model="showPopup.lastName" buttons v-slot="scope">
-            <q-input
-                v-model="user.phone"
-                dense
-                autofocus
-                counter
-                label="Phone Number"
-                placeholder="Phone Number"
-                @click="openPopup('phone')"
-                :validate="validatePhoneNumber"
-                @keyup.enter="scope.set"
-                @input="scope.modelValue = $event.target.value"
-            />
-          </q-popup-edit>
-        </div>
-        </div>
+    <div v-if="showUserForm" class="q-pa-md">
+      <div class="q-gutter-y-md column" style="max-width: 300px">
+        <q-input
+            clearable
+            filled
+            clear-icon="clear"
+            color="indigo"
+            v-model="user.firstName"
+            label="First Name"
+            :rules="[val => !!val || 'First Name is required', val => (val && val.length >= 2) || 'First Name must be more than or equal to 2 characters']"
+        >
+          <template v-if="user.firstName === updateUser.firstName" v-slot:append>
+            <q-icon name="cancel" @click.stop.prevent="user.firstName = ''" class="cursor-pointer" />
+          </template>
+        </q-input>
+        <q-input
+            clearable
+            filled
+            clear-icon="clear"
+            color="indigo"
+            v-model="user.lastName"
+            label="Last Name"
+            :rules="[val => !!val || 'Last Name is required', val => (val && val.length >= 2) || 'Last Name must be more than or equal to 2 characters']"
+        >
+          <template v-if="user.lastName === updateUser.lastName" v-slot:append>
+            <q-icon name="cancel" @click.stop.prevent="user.lastName = ''" class="cursor-pointer" />
+          </template>
+        </q-input>
+        <q-input
+            clearable
+            filled
+            clear-icon="clear"
+            color="indigo"
+            v-model="user.email"
+            label="Email"
+            :rules="[val => !!val || 'Email is required', val => /.+@.+\..+/.test(val) || 'Please enter a valid email']"
+        >
+          <template v-if="user.email === updateUser.email" v-slot:append>
+            <q-icon name="cancel" @click.stop.prevent="user.email = ''" class="cursor-pointer" />
+          </template>
+        </q-input>
+        <q-input
+            clearable
+            filled
+            clear-icon="clear"
+            color="indigo"
+            v-model="user.phone"
+            label="Phone Number"
+            :rules="[val => !!val || 'Phone Number is required', val => (val && val.length >= 10) || 'Phone Number must be more than or equal to 10 characters']"
+        >
+          <template v-if="user.phone === updateUser.phone" v-slot:append>
+            <q-icon name="cancel" @click.stop.prevent="user.phone = ''" class="cursor-pointer" />
+          </template>
+        </q-input>
+        <q-btn
+            label="Save"
+            id="saveUser"
+            style="background: #f919a9; color: white; margin-top: 0.5em; margin-left: 3em;"
+            @click="saveUser"
+        />
       </div>
     </div>
 
@@ -141,97 +115,110 @@
     </q-page-container>
   </q-layout>
 </template>
+
 <script>
+import api from '../../axios.js'
+import jwtDecode from 'jwt-decode';
+
 export default {
   name: 'UserDashboard',
   data() {
     return {
+      updateUser: {},
       balance: 1000.0,
       splitterPosition: 0,
-      currentAccountRows: [
-        {
-          date: '2023-05-01',
-          from: 'John Doe',
-          to: 'Jane Smith',
-          amount: 500.0,
-        },
-        {
-          date: '2023-05-08',
-          from: 'James Johnson',
-          to: 'John Doe',
-          amount: 1500.0,
-        },
-      ],
-      savingsAccountRows: [
-        {
-          date: '2023-05-05',
-          from: 'Jane Smith',
-          to: 'James Johnson',
-          amount: 2000.0,
-        },
-      ],
-      user: {
-        firstName: 'Soft',
-        lastName: 'Kitty',
-        email: 'itworks@example.com',
-        phone: '1234567890'
-      },
+      bankAccounts: [],
+      currentAccount: {},
+      savingsAccount: {},
+      currentAccountRows: [],
+      savingsAccountRows: [],
+      filterInput: '',
       showUserForm: false,
-      showPopup: {
-        firstName: false,
-        lastName: false,
-        email: false,
-        phone: false
-      },
-      errorFirstName: false, // Error state for firstName
-      errorMessageFirstName: '', // Error message for firstName
-      errorLastName: false, // Error state for lastName
-      errorMessageLastName: '', // Error message for lastName
-      errorEmailAddress: false, // Error state for emailAddress
-      errorMessageEmailAddress: '', // Error message for emailAddress
-      errorPhoneNumber: false, // Error state for phoneNumber
-      errorMessagePhoneNumber: '', // Error message for phoneNumber
     };
   },
+  mounted() {
+    const token = localStorage.getItem('token');
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      const email = decodedToken.sub;
+
+      api.getAccountByEmail(email)
+          .then(response => {
+            // Update the user data with the retrieved data
+            this.user = response.data;
+          })
+          .catch(error => {
+            console.error('Error retrieving user data:', error);
+          });
+
+      api.get(`/bankaccounts/${this.user.id}`)
+          .then(response => {
+            // Update the bankAccounts data with the retrieved data
+            this.bankAccounts = response.data;
+
+            // Categorize bank accounts as current or saving
+            this.bankAccounts.forEach(account => {
+              if (account.type === 'current') {
+                this.currentAccount.push(account);
+              } else if (account.type === 'saving') {
+                this.savingsAccount.push(account);
+              }
+            });
+
+            // Fetch transactions for the first bank account
+            if (this.currentAccount.length > 0) {
+              this.fetchTransactions(this.currentAccountRows[0].iban);
+            }
+          })
+          .catch(error => {
+            console.error('Error retrieving bank accounts:', error);
+          });
+    }
+  },
   methods: {
+    fetchTransactions(iban) {
+      // Fetch transactions for the specified iban and current page
+      const transactionData = {
+        iban: iban,
+        page: this.currentPage,
+        pageSize: this.pageSize,
+      };
+      api.getTransactionHistory(transactionData)
+          .then(response => {
+            // Update the transactions data with the retrieved data
+            this.transactions = response.data.items;
+            this.totalTransactions = response.data.total;
+          })
+          .catch(error => {
+            console.error('Error retrieving transactions:', error);
+          });
+    },
+    changePage(page) {
+      // Update the current page and fetch transactions for the new page
+      this.currentPage = page;
+      this.fetchTransactions(this.currentAccountRows[0].iban);
+    },
     logout() {
       // Clear session data and route to log in page
-      localStorage.removeItem('user')
-      localStorage.removeItem('token')
-      this.$router.push('/login')
+      localStorage.clear();
+      this.$router.push('/login');
     },
     toggleUserForm() {
-      this.showUserForm = !this.showUserForm
+      this.showUserForm = !this.showUserForm;
     },
-    validateName(value) {
-      if (!value || value.length === 0) {
-        this.errorFirstName = true;
-        this.errorMessageFirstName = 'Please enter your first name';
-        return false;
-      }
-      this.errorFirstName = false;
-      this.errorMessageFirstName = '';
-      return true;
-    },
-    validateEmailAddress(value) {
-      if (!value || !/.+@.+\..+/.test(value)) {
-        this.errorEmailAddress = true;
-        this.errorMessageEmailAddress = 'Please enter a valid email address';
-        return false;
-      }
-      this.errorEmailAddress = false;
-      this.errorMessageEmailAddress = '';
-      return true;
-    },
-    validatePhoneNumber(value) {
-      if (!value || value.length < 10) {
-        this.errorPhoneNumber = true;
-        this.errorMessagePhoneNumber = 'Please enter a valid phone number';
-        return false;
-      }
-      this.errorPhoneNumber = false;
-      this.errorMessagePhoneNumber = '';
-      return true;
+    saveUser() {
+      this.updatedUser = { ...this.user }; // Store the updated user data
+
+      // Perform the PUT request to the API with the updatedUser data
+      api.put('/users', this.updatedUser)
+          .then(response => {
+            // Handle the response
+            console.log('User updated successfully:', response.data);
+          })
+          .catch(error => {
+            // Handle the error
+            console.error('Error updating user:', error);
+          });
     },
   },
   computed: {
@@ -241,10 +228,11 @@ export default {
         { name: 'from', required: true, label: 'From', align: 'left', field: 'from', sortable: true },
         { name: 'to', required: true, label: 'To', align: 'left', field: 'to', sortable: true },
         { name: 'amount', required: true, label: 'Amount', align: 'right', field: 'amount', sortable: true },
-      ]
-    }
-  }
-}
+      ];
+    },
+  },
+};
+
 </script>
 
 
