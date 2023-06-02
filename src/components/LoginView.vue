@@ -46,7 +46,8 @@ export default {
   data() {
     return {
       email: '',
-      password: ''
+      password: '',
+      loginError: ''
     };
   },
   methods: {
@@ -72,7 +73,10 @@ export default {
             this.$router.push('/userDashboard');
           } else if (role === 'Employee') {
             this.$router.push('/employeeDashboard');
-          } else {
+          } else if (role === 'User') {
+            this.loginError = 'Login was successful but you currently do not have an account';
+          }
+          else {
             console.error('Unknown role:', role);
           }
         })
