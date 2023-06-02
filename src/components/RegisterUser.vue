@@ -54,6 +54,14 @@
             lazy-rules
             :rules="[val => val && val.length > 0 || 'Please enter your password', val => /[A-Z]/.test(val) || 'Password must contain at least one capital letter', val => /[^A-Za-z0-9]/.test(val) || 'Password must contain at least one special character']"
         />
+        <q-input
+            filled
+            v-model="confirmPassword"
+            type="password"
+            label="Confirm Password"
+            lazy-rules
+            :rules="[val => val && val === password.value || 'Passwords do not match']"
+        />
 
 
         <div>
@@ -67,13 +75,31 @@
 <script>
 import { useQuasar } from 'quasar'
 import { ref } from 'vue'
+import api from '../../axios.js';
+import bcrypt from 'bcryptjs';
+
 
 export default {
   name: "RegisterUser",
   methods: {
     register() {
-      // Perform user registration here
-      // this method is already called when the user clicks the register button so only the logic is needed here
+      const userData = {
+        firstName: this.firstName,
+        lastName: this.lastName,
+        email: this.email,
+        BSN: this.BSN,
+        phone: this.phone,
+        password: bcrypt.hashSync(this.password, bcrypt.genSaltSync(10)) // Hash the password
+      };
+      api.createUser(userData)
+          .then(response => {
+            console.log(response.data);
+            this.$router.push('/success'); // Redirect the user to the success page
+          })
+          .catch(error => {
+            // Handle the error here
+            console.error(error);
+          });
     }
   },
   setup() {
@@ -86,6 +112,7 @@ export default {
     const phone = ref(null)
     const password = ref(null)
     const accept = ref(false)
+    const confirmPassword = ref(null);
 
     const onSubmit = () => {
       if (accept.value !== true) {
@@ -95,6 +122,13 @@ export default {
           icon: 'warning',
           message: 'You need to accept the license and terms first'
         })
+      } else if (password.value !== confirmPassword.value) {
+        $q.notify({
+          color: 'red-5',
+          textColor: 'white',
+          icon: 'warning',
+          message: 'Passwords do not match'
+        });
       } else {
         $q.notify({
           color: 'green-4',
@@ -125,7 +159,8 @@ export default {
       password,
       accept,
       onSubmit,
-      onReset
+      onReset,
+      confirmPassword,
     }
   }
 }
