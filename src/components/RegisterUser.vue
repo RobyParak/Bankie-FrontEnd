@@ -4,7 +4,7 @@
     <h5>Register as a new user or <router-link to="/login">log in</router-link></h5>
   </div>
   <div class="q-pa-md" style="justify-self: center; padding-left: 20em; max-width: 80%;">
-      <q-form @submit="onSubmit" @reset="onReset" class="q-gutter-md">
+      <q-form @reset="onReset" class="q-gutter-md">
         <q-input
             filled
             v-model="firstName"
@@ -54,18 +54,9 @@
             lazy-rules
             :rules="[val => val && val.length > 0 || 'Please enter your password', val => /[A-Z]/.test(val) || 'Password must contain at least one capital letter', val => /[^A-Za-z0-9]/.test(val) || 'Password must contain at least one special character']"
         />
-        <q-input
-            filled
-            v-model="confirmPassword"
-            type="password"
-            label="Confirm Password"
-            lazy-rules
-            :rules="[val => val && val === password.value || 'Passwords do not match']"
-        />
-
 
         <div>
-          <q-btn  class="q-ml-auto" id="registerBtn" label="Register" type="submit" />
+          <q-btn class="q-ml-auto" id="registerBtn" label="Register" @click="register" />
           <q-btn label="Reset" type="reset" color="primary" flat class="q-ml-sm" />
         </div>
       </q-form>
@@ -73,7 +64,6 @@
 </template>
 
 <script>
-import { useQuasar } from 'quasar'
 import { ref } from 'vue'
 import api from '../../axios.js';
 import bcrypt from 'bcryptjs';
@@ -103,8 +93,6 @@ export default {
     }
   },
   setup() {
-    const $q = useQuasar()
-
     const firstName = ref(null)
     const lastName = ref(null)
     const email = ref(null)
@@ -112,33 +100,7 @@ export default {
     const phone = ref(null)
     const password = ref(null)
     const accept = ref(false)
-    const confirmPassword = ref(null);
 
-    const onSubmit = () => {
-      if (accept.value !== true) {
-        $q.notify({
-          color: 'red-5',
-          textColor: 'white',
-          icon: 'warning',
-          message: 'You need to accept the license and terms first'
-        })
-      } else if (password.value !== confirmPassword.value) {
-        $q.notify({
-          color: 'red-5',
-          textColor: 'white',
-          icon: 'warning',
-          message: 'Passwords do not match'
-        });
-      } else {
-        $q.notify({
-          color: 'green-4',
-          textColor: 'white',
-          icon: 'cloud_done',
-          message: 'Submitted'
-        })
-        this.register() // Call the register method
-      }
-    }
 
     const onReset = () => {
       firstName.value = null
@@ -158,9 +120,7 @@ export default {
       phone,
       password,
       accept,
-      onSubmit,
       onReset,
-      confirmPassword,
     }
   }
 }
