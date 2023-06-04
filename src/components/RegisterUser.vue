@@ -79,7 +79,10 @@ export default {
         email: this.email,
         bsn: this.bsn,
         phoneNumber: this.phoneNumber,
-        password: bcrypt.hashSync(this.password, bcrypt.genSaltSync(10)) // Hash the password
+        password: bcrypt.hashSync(this.password, bcrypt.genSaltSync(10)), // Hash the password
+        role : 'User',
+        transactionLimit: 800,
+        dailyLimit: 1000,
       };
       api.createUser(userData)
           .then(response => {
@@ -100,7 +103,6 @@ export default {
     const phoneNumber = ref(null)
     const password = ref(null)
     const accept = ref(false)
-
 
     const onReset = () => {
       firstName.value = null
