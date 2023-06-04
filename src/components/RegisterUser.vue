@@ -58,6 +58,8 @@
         <div>
           <q-btn class="q-ml-auto" id="registerBtn" label="Register" @click="register" />
           <q-btn label="Reset" type="reset" color="primary" flat class="q-ml-sm" />
+          <!-- Display error message -->
+          <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
         </div>
       </q-form>
     </div>
@@ -90,8 +92,15 @@ export default {
             this.$router.push('/success'); // Redirect the user to the success page
           })
           .catch(error => {
-            // Handle the error here
-            console.error(error);
+            // Check if the error is due to duplicate email address
+            if (error.response && error.response.status === 400 && error.response.data.message === "Email address already exists") {
+              // Handle the duplicate email error
+              this.errorMessage = "Email address already exists. Please choose a different email.";
+            } else {
+              // Handle other errors
+              console.error(error);
+              this.errorMessage = "An error occurred. Please try again.";
+            }
           });
     }
   },
@@ -103,6 +112,7 @@ export default {
     const phoneNumber = ref(null)
     const password = ref(null)
     const accept = ref(false)
+    const errorMessage = ref(null)
 
     const onReset = () => {
       firstName.value = null
@@ -123,6 +133,7 @@ export default {
       password,
       accept,
       onReset,
+      errorMessage,
     }
   }
 }
