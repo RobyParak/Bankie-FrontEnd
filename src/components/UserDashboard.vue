@@ -130,6 +130,14 @@ export default {
       bankAccounts: [],
       currentAccount: {},
       savingsAccount: {},
+      user : {
+        id : '',
+        firstName: '',
+        lastName: '',
+        bsn : '',
+        email: '',
+        phone: '',
+      },
       currentAccountRows: [],
       savingsAccountRows: [],
       filterInput: '',
@@ -151,16 +159,15 @@ export default {
             console.error('Error retrieving user data:', error);
           });
 
-      api.get(`/bankaccounts/${this.user.id}`)
+      api.getBankAccounts(this.user.id)
           .then(response => {
-            // Update the bankAccounts data with the retrieved data
             this.bankAccounts = response.data;
 
             // Categorize bank accounts as current or saving
             this.bankAccounts.forEach(account => {
-              if (account.type === 'current') {
+              if (account.type === 'Current') {
                 this.currentAccount.push(account);
-              } else if (account.type === 'saving') {
+              } else if (account.type === 'Saving') {
                 this.savingsAccount.push(account);
               }
             });
@@ -210,7 +217,7 @@ export default {
       this.updatedUser = { ...this.user }; // Store the updated user data
 
       // Perform the PUT request to the API with the updatedUser data
-      api.put('/users', this.updatedUser)
+      api.updateUserById(this.user.id, this.updatedUser)
           .then(response => {
             // Handle the response
             console.log('User updated successfully:', response.data);
