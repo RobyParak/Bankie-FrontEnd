@@ -57,6 +57,11 @@ export default {
     return apiClient.delete(`/users/${userId}`);
   },
 
+    // Get all bankaccounts
+    getAllAccounts(params) {
+      return apiClient.get('/bankaccounts', { params });
+    },
+
   // Create an account
   createAccount(accountData) {
     return apiClient.post('/bankaccounts', accountData);

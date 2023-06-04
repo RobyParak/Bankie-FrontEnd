@@ -33,21 +33,21 @@
           >
             <template #body="props">
               <q-tr :props="props">
-                <q-td key="FirstName" :props="props">
-                        {{ props.row.Fname }}
-                        <q-popup-edit v-model="props.row.Fname" buttons v-slot="scope">
+                <q-td key="firstName" :props="props">
+                        {{ props.row.firstName }}
+                        <q-popup-edit v-model="props.row.firstName" buttons v-slot="scope">
                         <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
                         </q-popup-edit>
                     </q-td>
-                    <q-td key="LastName" :props="props">
-                        {{ props.row.Lname }}
-                        <q-popup-edit v-model="props.row.Lname" buttons v-slot="scope">
+                    <q-td key="lastName" :props="props">
+                        {{ props.row.lastName }}
+                        <q-popup-edit v-model="props.row.lastName" buttons v-slot="scope">
                         <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
                         </q-popup-edit>
                     </q-td>
-                    <q-td key="Phone" :props="props">
-                        {{ props.row.phone }}
-                        <q-popup-edit v-model="props.row.phone" buttons v-slot="scope">
+                    <q-td key="phoneNumber" :props="props">
+                        {{ props.row.phoneNumber }}
+                        <q-popup-edit v-model="props.row.phoneNumber" buttons v-slot="scope">
                         <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
                         </q-popup-edit>
                     </q-td>
@@ -57,21 +57,21 @@
                         <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
                         </q-popup-edit>
                     </q-td>
-                    <q-td key="DailyLimit" :props="props">
-                        €{{ props.row.Dlimit }}
-                        <q-popup-edit v-model="props.row.Dlimit" buttons v-slot="scope">
+                    <q-td key="dailyLimit" :props="props">
+                        €{{ props.row.dailyLimit }}
+                        <q-popup-edit v-model="props.row.dailyLimit" buttons v-slot="scope">
                         <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
                         </q-popup-edit>
                     </q-td>
-                    <q-td key="TransactionLimit" :props="props">
-                        €{{ props.row.Tlimit }}
-                        <q-popup-edit v-model="props.row.Tlimit" buttons v-slot="scope">
+                    <q-td key="transactionLimit" :props="props">
+                        €{{ props.row.transactionLimit }}
+                        <q-popup-edit v-model="props.row.transactionLimit" buttons v-slot="scope">
                         <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
                         </q-popup-edit>
                     </q-td>
-                    <q-td key="Role" :props="props">
-                        {{ props.row.Role }}
-                        <q-popup-edit v-model="props.row.Role" buttons v-slot="scope">
+                    <q-td key="role" :props="props">
+                        {{ props.row.role }}
+                        <q-popup-edit v-model="props.row.role" buttons v-slot="scope">
                         <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
                         </q-popup-edit>
                     </q-td>
@@ -239,31 +239,29 @@ export default {
       { name: 'Status', label: 'Status', field: 'status' },
     ];
 
-    const bankAccountRows = ref([
-      {
-        iban: 'NL12345678900',
-        ownerID: 765,
-        balance: 1234.5678,
-        absoluteLimit: 1000,
-        status: 'Inactive',
-      },
-      {
-        iban: 'NL12345678900',
-        ownerID: 765,
-        balance: 1234.5678,
-        absoluteLimit: 1000,
-        status: 'Active',
-      },
-    ]);
+    const bankAccountRows = ref([]);
+    const getAllAccounts = async () => {
+      try {
+        const response = await api.getAllAccounts();
+        bankAccountRows.value = response.data;
+      } catch (error) {
+        console.error(error);
+      }
+    };
+
+    onMounted(() => {
+      getAllUsers();
+      getAllAccounts();
+    });
 
     const usersColumns = [
-      { name: 'FirstName', align: 'left', label: 'First Name', field: 'Fname' },
-      { name: 'LastName', align: 'center', label: 'Last Name', field: 'Lname' },
-      { name: 'Phone', label: 'Phone', field: 'phone' },
+      { name: 'firstName', align: 'left', label: 'First Name', field: 'firstName' },
+      { name: 'lastName', align: 'center', label: 'Last Name', field: 'lastName' },
+      { name: 'phoneNumber', label: 'Phone', field: 'phoneNumber' },
       { name: 'Email', label: 'Email', field: 'email' },
-      { name: 'DailyLimit', label: 'Daily Limit', field: 'Dlimit' },
-      { name: 'TransactionLimit', label: 'Transaction Limit', field: 'Tlimit' },
-      { name: 'Role', label: 'Role', field: 'Role' },
+      { name: 'dailyLimit', label: 'Daily Limit', field: 'dailyLimit' },
+      { name: 'transactionLimit', label: 'Transaction Limit', field: 'transactionLimit' },
+      { name: 'role', label: 'Role', field: 'role' },
       { name: 'bsn', label: 'BSN', field: 'bsn' },
     ];
 
