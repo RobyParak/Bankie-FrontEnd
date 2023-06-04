@@ -75,6 +75,12 @@
                         <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
                         </q-popup-edit>
                     </q-td>
+                    <q-td key="bsn" :props="props">
+                        {{ props.row.bsn }}
+                        <q-popup-edit v-model="props.row.bsn" buttons v-slot="scope">
+                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
+                        </q-popup-edit>
+                    </q-td>
               </q-tr>
             </template>
           </q-table>
@@ -217,7 +223,9 @@
 </template>
 
 <script>
-import axios from 'axios';
+
+//import jwtDecode from 'jwt-decode';
+import api from '../../axios.js';
 import { ref, onMounted } from 'vue';
 
 export default {
@@ -256,13 +264,14 @@ export default {
       { name: 'DailyLimit', label: 'Daily Limit', field: 'Dlimit' },
       { name: 'TransactionLimit', label: 'Transaction Limit', field: 'Tlimit' },
       { name: 'Role', label: 'Role', field: 'Role' },
+      { name: 'bsn', label: 'BSN', field: 'bsn' },
     ];
 
     const usersRows = ref([]);
 
     const getAllUsers = async () => {
       try {
-        const response = await axios.get('/users');
+        const response = await api.getAllUsers();
         usersRows.value = response.data;
       } catch (error) {
         console.error(error);
@@ -284,7 +293,18 @@ export default {
       selectedBankAccount: ref([]),
     };
   },
-}
+  methods: {
+    async getAllUsers() {
+      try {
+        const response = await api.getAllUsers();
+        this.usersRows = response.data;
+      } catch (error) {
+        console.error(error);
+      }
+    },
+  },
+};
+
 </script>
 
 <style lang="sass" scoped>
