@@ -149,6 +149,7 @@ export default {
           .then(response => {
             // Update the user data with the retrieved data
             this.user = response.data[0];
+            localStorage.setItem('userId', JSON.stringify(this.user.id));
             api.getBankAccounts(this.user.id)
                 .then(response => {
                   this.bankAccounts = response.data;

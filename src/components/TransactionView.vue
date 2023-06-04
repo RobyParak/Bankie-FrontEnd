@@ -78,20 +78,19 @@
               Your selection is: <strong>{{ shape }}</strong>
             </div>
             <div class="q-gutter-y-md column" style="max-width: 300px;">
-              <q-input
-                filled
-                :label="shape === 'withdraw' ? 'From (Savings)' : 'From (Current)'"
-                v-model="bankAccount.from"
-                placeholder=""
-                :dense="dense"
-              />
-              <q-input
-                filled
-                :label="shape === 'withdraw' ? 'To (Current)' : 'To (Savings)'"
-                v-model="bankAccount.to"
-                placeholder=""
-                :dense="dense"
-              />
+                <q-input
+                    filled
+                    v-model="bankAccount.to"
+                    placeholder="Your current account"
+                    :dense="dense"
+                />
+                <q-input
+                    filled
+                    v-model="bankAccount.from"
+                    :label="transactionLabels.toLabel"
+                    placeholder=""
+                    :dense="dense"
+                />
               <div class="q-pa-md" style="max-width: 300px">
                 <q-input v-model="text" filled autogrow hint="Comment" />
               </div>
@@ -136,9 +135,35 @@
 
 <script>
 import { ref, computed } from 'vue';
+import api from '../../axios.js'
 
 export default {
   name: "TransactionView.vue",
+  bankAccounts: [],
+  currentAccount: {},
+  savingsAccount: {},
+  //The bank itself iban to make transactions for ATM
+  bankjeAccountIban : "NL01INHO0000000001",
+  mounted() {
+    //TODO check with Mark about userId in localstorage
+    api.getBankAccounts(localStorage.getItem('userId'))
+        .then(response => {
+          this.bankAccounts = response.data;
+
+          // Categorize bank accounts as current or saving
+          this.bankAccounts.forEach(account => {
+            if (account.type === 'Current') {
+              this.currentAccount.push(account);
+            } else if (account.type === 'Saving') {
+              this.savingsAccount.push(account);
+            }
+          });
+        })
+        .catch(error => {
+          console.error('Error retrieving user data:', error);
+        });
+
+  },
   setup() {
     const emailInput = ref('');
     const passwordInput = ref('');
@@ -150,13 +175,13 @@ export default {
     const bankAccount = computed(() => {
       if (shape.value === "withdraw") {
         return {
-          from: 'NL12345SAVINGS',
-          to: 'NL12345CURRENT',
+          from: '',
+          to: 'NL01INHO0000000001',
         };
       } else if (shape.value === "deposit") {
         return {
-          to: 'NL12345SAVINGS',
-          from: 'NL12345CURRENT',
+          to: 'NL01INHO0000000001',
+          from: '',
         };
       }
 
@@ -169,13 +194,13 @@ export default {
     const transactionLabels = computed(() => {
       if (shape.value === "withdraw") {
         return {
-          fromLabel: "From (Savings)",
-          toLabel: "To (Current)",
+          fromLabel: "From (Current)",
+          toLabel: "To (Bankje's account)",
         };
       } else if (shape.value === "deposit") {
         return {
-          fromLabel: "From (Current)",
-          toLabel: "To (Savings)",
+          fromLabel: "From (Bankje's account)",
+          toLabel: "To (Current)",
         };
       }
 
