@@ -58,7 +58,7 @@
             filled
             clear-icon="clear"
             color="indigo"
-            v-model="user.phone"
+            v-model="user.phoneNumber"
             label="Phone Number"
             :rules="[val => !!val || 'Phone Number is required', val => (val && val.length >= 10) || 'Phone Number must be more than or equal to 10 characters']"
         >
@@ -130,14 +130,8 @@ export default {
       bankAccounts: [],
       currentAccount: {},
       savingsAccount: {},
-      user : {
-        id : '',
-        firstName: '',
-        lastName: '',
-        bsn : '',
-        email: '',
-        phone: '',
-      },
+      user : {},
+
       currentAccountRows: [],
       savingsAccountRows: [],
       filterInput: '',
@@ -150,32 +144,31 @@ export default {
       const decodedToken = jwtDecode(token);
       const email = decodedToken.sub;
 
+
       api.getAccountByEmail(email)
           .then(response => {
             // Update the user data with the retrieved data
-            this.user = response.data;
+            this.user = response.data[0];
+            api.getBankAccounts(this.user.id)
+                .then(response => {
+                  this.bankAccounts = response.data;
+
+                  // Categorize bank accounts as current or saving
+                  this.bankAccounts.forEach(account => {
+                    if (account.type === 'Current') {
+                      this.currentAccount.push(account);
+                    } else if (account.type === 'Saving') {
+                      this.savingsAccount.push(account);
+                    }
+                  });
           })
           .catch(error => {
             console.error('Error retrieving user data:', error);
           });
 
-      api.getBankAccounts(this.user.id)
-          .then(response => {
-            this.bankAccounts = response.data;
 
-            // Categorize bank accounts as current or saving
-            this.bankAccounts.forEach(account => {
-              if (account.type === 'Current') {
-                this.currentAccount.push(account);
-              } else if (account.type === 'Saving') {
-                this.savingsAccount.push(account);
-              }
-            });
-
-            // Fetch transactions for the first bank account
-            if (this.currentAccount.length > 0) {
-              this.fetchTransactions(this.currentAccountRows[0].iban);
-            }
+ this.fetchTransactions(this.currentAccount.iban);
+//TODO worry about the savings account
           })
           .catch(error => {
             console.error('Error retrieving bank accounts:', error);
