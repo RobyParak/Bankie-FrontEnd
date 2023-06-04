@@ -31,16 +31,16 @@
         />
         <q-input
             filled
-            v-model="BSN"
-            label="BSN"
-            placeholder="BSN"
+            v-model="bsn"
+            label="bsn"
+            placeholder="bsn"
             lazy-rules
             :rules="[val => val && (val.length === 8 || val.length === 9) || 'Please enter a valid BSN']"
         />
 
         <q-input
             filled
-            v-model="phone"
+            v-model="phoneNumber"
             label="Phone Number"
             placeholder="Phone"
             lazy-rules
@@ -77,8 +77,8 @@ export default {
         firstName: this.firstName,
         lastName: this.lastName,
         email: this.email,
-        BSN: this.BSN,
-        phone: this.phone,
+        bsn: this.bsn,
+        phoneNumber: this.phoneNumber,
         password: bcrypt.hashSync(this.password, bcrypt.genSaltSync(10)) // Hash the password
       };
       api.createUser(userData)
@@ -96,8 +96,8 @@ export default {
     const firstName = ref(null)
     const lastName = ref(null)
     const email = ref(null)
-    const BSN = ref(null)
-    const phone = ref(null)
+    const bsn = ref(null)
+    const phoneNumber = ref(null)
     const password = ref(null)
     const accept = ref(false)
 
@@ -106,8 +106,8 @@ export default {
       firstName.value = null
       lastName.value = null
       email.value = null
-      BSN.value = null
-      phone.value = null
+      bsn.value = null
+      phoneNumber.value = null
       password.value = null
       accept.value = false
     }
@@ -116,8 +116,8 @@ export default {
       firstName,
       lastName,
       email,
-      BSN,
-      phone,
+      bsn,
+      phoneNumber,
       password,
       accept,
       onReset,
