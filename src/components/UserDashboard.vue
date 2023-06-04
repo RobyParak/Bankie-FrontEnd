@@ -181,6 +181,9 @@ export default {
             console.error('Error retrieving bank accounts:', error);
           });
     }
+      else {
+        this.$router.push('/login');
+      }
   },
   methods: {
     fetchTransactions(iban) {

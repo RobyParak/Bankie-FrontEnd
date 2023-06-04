@@ -38,7 +38,7 @@ export default {
   },
   //get user's accounts
   getBankAccounts(ownerId) {
-    return apiClient.get(`/bankaccounts/${ownerId}`);
+    return apiClient.get(`/accounts/${ownerId}`);
   },
 
   // Update a user by ID
@@ -53,7 +53,7 @@ export default {
 
   // Create an account
   createAccount(accountData) {
-    return apiClient.post('/bankaccounts', accountData);
+    return apiClient.post('/accounts', accountData);
   },
 
   // Get account details
