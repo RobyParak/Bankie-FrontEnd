@@ -177,14 +177,14 @@
       flat bordered
       :rows="usersRows"
       :columns="usersColumns"
-      row-key="firstName"
+      row-key="id"
       selection="single"
       v-model:selected="selectedUser"
     />
     <div class="q-mt-md">
       Selected: {{ JSON.stringify(selectedUser) }}
     </div>
-    <q-btn  class="q-ml-auto" style="background: #800000; color: white" label="Delete User" type="submit" />
+    <q-btn  class="q-ml-auto" style="background: #800000; color: white" label="Delete User" type="submit" @click="deleteUser" />
         </q-tab-panel>
 <!-- DEACTIVATE BANK ACCOUNT -->
         <q-tab-panel name="delAccount">
@@ -307,16 +307,27 @@ export default {
       }
     },
     updateUser(user) {
-    api.updateUserById(user.id, user)
-      .then(response => {
-        // Handle the response
-        console.log('User updated successfully:', response.data);
-      })
-      .catch(error => {
-        // Handle the error
-        console.error('Error updating user:', error);
-      });
-  },
+      api.updateUserById(user.id, user)
+          .then(response => {
+            // Handle the response
+            console.log('User updated successfully:', response.data);
+          })
+          .catch(error => {
+            // Handle the error
+            console.error('Error updating user:', error);
+          });
+    },
+    deleteUser() {
+      const user =this.selectedUser[0];
+      api.deleteUserById(user.id)
+          .then(response => {
+            console.log('User deleted successfully:', response.data);
+          })
+          .catch(error => {
+            // Handle the error
+            console.error('Error deleting user:', error);
+          });
+    },
   },
 };
 

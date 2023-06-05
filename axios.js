@@ -36,17 +36,16 @@ export default {
   createUser(userData) {
     return apiClient.post('/users', userData);
   },
-
   //get transactions by iban
   getTransactionsByIbanFrom(iban) {
     return apiClient.get(`/transactions?accountfrom=${iban}`);
   },
   getTransactionsByIbanTo(iban) {
     return apiClient.get(`/transactions?accountto=${iban}`);
-
+},
     // Get all users
-    getAllUsers(params) {
-      return apiClient.get('/users', { params });
+    getAllUsers() {
+      return apiClient.get('/users');
     },
       //get all bank accounts
   getAllBankAccounts() {
