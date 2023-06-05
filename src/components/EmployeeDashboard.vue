@@ -33,37 +33,37 @@
           >
             <template #body="props">
               <q-tr :props="props">
-                <q-td key="firstName" :props="props">
+                <q-td key="firstName" :props="props" class="editable">
                         {{ props.row.firstName }}
                         <q-popup-edit v-model="props.row.firstName" buttons v-slot="scope">
                         <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" @blur="updateUser(props.row)"/>
                         </q-popup-edit>
                     </q-td>
-                    <q-td key="lastName" :props="props">
+                    <q-td key="lastName" :props="props" class="editable">
                         {{ props.row.lastName }}
                         <q-popup-edit v-model="props.row.lastName" buttons v-slot="scope">
                         <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" @blur="updateUser(props.row)"/>
                         </q-popup-edit>
                     </q-td>
-                    <q-td key="phoneNumber" :props="props">
+                    <q-td key="phoneNumber" :props="props" class="editable">
                         {{ props.row.phoneNumber }}
                         <q-popup-edit v-model="props.row.phoneNumber" buttons v-slot="scope">
                         <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" @blur="updateUser(props.row)"/>
                         </q-popup-edit>
                     </q-td>
-                    <q-td key="Email" :props="props">
+                    <q-td key="Email" :props="props" class="editable">
                         {{ props.row.email }}
                         <q-popup-edit v-model="props.row.email" buttons v-slot="scope">
                         <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" @blur="updateUser(props.row)"/>
                         </q-popup-edit>
                     </q-td>
-                    <q-td key="dailyLimit" :props="props">
+                    <q-td key="dailyLimit" :props="props" class="editable">
                         €{{ props.row.dailyLimit }}
                         <q-popup-edit v-model="props.row.dailyLimit" buttons v-slot="scope">
                         <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" @blur="updateUser(props.row)"/>
                         </q-popup-edit>
                     </q-td>
-                    <q-td key="transactionLimit" :props="props">
+                    <q-td key="transactionLimit" :props="props" class="editable">
                         €{{ props.row.transactionLimit }}
                         <q-popup-edit v-model="props.row.transactionLimit" buttons v-slot="scope">
                         <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" @blur="updateUser(props.row)"/>
@@ -98,29 +98,26 @@
           >
             <template #body="props">
               <q-tr :props="props">
-                <q-td key="IBAN" :props="props">
+                <q-td key="iban" :props="props">
                   {{ props.row.iban }}
                 </q-td>
-                <q-td key="OwnerID" :props="props">
-                  {{ props.row.ownerID }}
+                <q-td key="ownerId" :props="props">
+                  {{ props.row.ownerId }}
                 </q-td>
-                <q-td key="Balance" :props="props">
-                  {{ props.row.balance }}
+                <q-td key="statusId" :props="props">
+                  {{ props.row.statusId }}
                 </q-td>
-                <q-td key="AbsoluteLimit" :props="props">
-                  <q-popup-edit v-model="props.row.absoluteLimit" buttons v-slot="scope">
-                    <q-input
-                      v-model="scope.modelValue"
-                      dense
-                      autofocus
-                      counter
-                      @keyup.enter="scope.set"
-                      @input="scope.modelValue = $event.target.value"
-                    />
-                  </q-popup-edit>
+                <q-td key="amount" :props="props">
+                  {{ props.row.amount }}
                 </q-td>
-                <q-td key="Status" :props="props">
-                  {{ props.row.status }}
+                <q-td key="absoluteLimit" :props="props" class="editable">
+                        €{{ props.row.absoluteLimit }}
+                        <q-popup-edit v-model="props.row.absoluteLimit" buttons v-slot="scope">
+                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set"/>
+                        </q-popup-edit>
+                    </q-td>
+                <q-td key="typeId" :props="props">
+                  {{ props.row.typeId }}
                 </q-td>
               </q-tr>
             </template>
@@ -180,7 +177,7 @@
       flat bordered
       :rows="usersRows"
       :columns="usersColumns"
-      row-key="Fname"
+      row-key="firstName"
       selection="single"
       v-model:selected="selectedUser"
     />
@@ -217,36 +214,21 @@
 </template>
 
 <script>
-
-//import jwtDecode from 'jwt-decode';
 import api from '../../axios.js';
 import { ref, onMounted } from 'vue';
 
 export default {
-  name: 'UserDashboard',
   setup() {
     const bankAccountColumns = [
-      { name: 'IBAN', align: 'left', label: 'IBAN', field: 'iban' },
-      { name: 'OwnerID', align: 'left', label: 'OwnerID', field: 'ownerID' },
-      { name: 'Balance', label: 'Balance', field: 'balance' },
-      { name: 'AbsoluteLimit', label: 'Absolute Limit (editable)', field: 'absoluteLimit' },
-      { name: 'Status', label: 'Status', field: 'status' },
+      { name: 'iban', align: 'left', label: 'IBAN', field: 'iban' },
+      { name: 'ownerId', label: 'Owner ID', field: 'ownerId' },
+      { name: 'statusId', label: 'status', field: 'statusId' },
+      { name: 'amount', label: 'Balance', field: 'amount' },
+      { name: 'absoluteLimit', label: 'Absolute Limit (editable)', field: 'absoluteLimit'},
+      { name: 'typeId', label: 'Type ID', field: 'typeId' },
     ];
 
     const bankAccountRows = ref([]);
-    const getAllAccounts = async () => {
-      try {
-        const response = await api.getAllAccounts();
-        bankAccountRows.value = response.data;
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    onMounted(() => {
-      getAllUsers();
-      getAllAccounts();
-    });
 
     const usersColumns = [
       { name: 'firstName', align: 'left', label: 'First Name', field: 'firstName' },
@@ -259,8 +241,7 @@ export default {
       { name: 'bsn', label: 'BSN', field: 'bsn' },
     ];
 
-    const usersRows = ref([]); //make the edited rows reactive
-
+    const usersRows = ref([]); 
     const getAllUsers = async () => {
       try {
         const response = await api.getAllUsers();
@@ -269,9 +250,18 @@ export default {
         console.error(error);
       }
     };
+    const getAllBankAccounts = async () => {
+      try {
+        const response = await api.getAllBankAccounts();
+        bankAccountRows.value = response.data;
+      } catch (error) {
+        console.error(error);
+      }
+    };
 
     onMounted(() => {
       getAllUsers();
+      getAllBankAccounts();
     });
 
     return {
@@ -313,4 +303,11 @@ export default {
 <style lang="sass" scoped>
 .my-custom-toggle
   border: 1px solid #027be3
+</style>
+<style>
+.editable{
+  font-size: 24px;
+  font-weight: bold;
+  color: blue;
+}
 </style>
