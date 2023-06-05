@@ -36,9 +36,13 @@ export default {
   createUser(userData) {
     return apiClient.post('/users', userData);
   },
-  //get user's accounts
-  getBankAccounts(ownerId) {
-    return apiClient.get(`/accounts?ownerId=${ownerId}`);
+  //get transactions by iban
+  getTransactionsByIban(iban) {
+    return apiClient.get(`/transactions?iban=${iban}`);
+  },
+
+  getBankAccountByIban(iban) {
+    return apiClient.get(`/accounts?iban=${iban}`);
   },
 
   // Update a user by ID
