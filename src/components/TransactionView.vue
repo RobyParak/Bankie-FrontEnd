@@ -223,7 +223,6 @@ export default {
   },
   methods: {
     createTransaction() {
-      //TODO check with Mark about userId in localstorage
       const transactionData = {
         userId: localStorage.getItem('userId'),
         from: this.bankAccount.from,

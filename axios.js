@@ -53,7 +53,7 @@ export default {
 
   // Create an account
   createAccount(accountData) {
-    return apiClient.post('/accounts', accountData);
+    return apiClient.post('/bankaccounts', accountData);
   },
 
   // Get account details
