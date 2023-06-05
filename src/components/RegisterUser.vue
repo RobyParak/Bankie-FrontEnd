@@ -4,7 +4,7 @@
     <h5>Register as a new user or <router-link to="/login">log in</router-link></h5>
   </div>
   <div class="q-pa-md" style="justify-self: center; padding-left: 20em; max-width: 80%;">
-      <q-form @submit="onSubmit" @reset="onReset" class="q-gutter-md">
+      <q-form @reset="onReset" class="q-gutter-md">
         <q-input
             filled
             v-model="firstName"
@@ -31,16 +31,16 @@
         />
         <q-input
             filled
-            v-model="BSN"
-            label="BSN"
-            placeholder="BSN"
+            v-model="bsn"
+            label="bsn"
+            placeholder="bsn"
             lazy-rules
             :rules="[val => val && (val.length === 8 || val.length === 9) || 'Please enter a valid BSN']"
         />
 
         <q-input
             filled
-            v-model="phone"
+            v-model="phoneNumber"
             label="Phone Number"
             placeholder="Phone"
             lazy-rules
@@ -55,63 +55,71 @@
             :rules="[val => val && val.length > 0 || 'Please enter your password', val => /[A-Z]/.test(val) || 'Password must contain at least one capital letter', val => /[^A-Za-z0-9]/.test(val) || 'Password must contain at least one special character']"
         />
 
-
         <div>
-          <q-btn  class="q-ml-auto" id="registerBtn" label="Register" type="submit" />
+          <q-btn class="q-ml-auto" id="registerBtn" label="Register" @click="register" />
           <q-btn label="Reset" type="reset" color="primary" flat class="q-ml-sm" />
+          <!-- Display error message -->
+          <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
         </div>
       </q-form>
     </div>
 </template>
 
 <script>
-import { useQuasar } from 'quasar'
 import { ref } from 'vue'
+import api from '../../axios.js';
+import bcrypt from 'bcryptjs';
+
 
 export default {
   name: "RegisterUser",
   methods: {
     register() {
-      // Perform user registration here
-      // this method is already called when the user clicks the register button so only the logic is needed here
+      const userData = {
+        firstName: this.firstName,
+        lastName: this.lastName,
+        email: this.email,
+        bsn: this.bsn,
+        phoneNumber: this.phoneNumber,
+        password: bcrypt.hashSync(this.password, bcrypt.genSaltSync(10)), // Hash the password
+        role : 'User',
+        transactionLimit: 800,
+        dailyLimit: 1000,
+      };
+      api.createUser(userData)
+          .then(response => {
+            console.log(response.data);
+            this.$router.push('/success'); // Redirect the user to the success page
+          })
+          .catch(error => {
+            // Check if the error is due to duplicate email address
+            if (error.response && error.response.status === 400 && error.response.data.message === "Email address already exists") {
+              // Handle the duplicate email error
+              this.errorMessage = "Email address already exists. Please choose a different email.";
+            } else {
+              // Handle other errors
+              console.error(error);
+              this.errorMessage = "An error occurred. Please try again.";
+            }
+          });
     }
   },
   setup() {
-    const $q = useQuasar()
-
     const firstName = ref(null)
     const lastName = ref(null)
     const email = ref(null)
-    const BSN = ref(null)
-    const phone = ref(null)
+    const bsn = ref(null)
+    const phoneNumber = ref(null)
     const password = ref(null)
     const accept = ref(false)
-
-    const onSubmit = () => {
-      if (accept.value !== true) {
-        $q.notify({
-          color: 'red-5',
-          textColor: 'white',
-          icon: 'warning',
-          message: 'You need to accept the license and terms first'
-        })
-      } else {
-        $q.notify({
-          color: 'green-4',
-          textColor: 'white',
-          icon: 'cloud_done',
-          message: 'Submitted'
-        })
-        this.register() // Call the register method
-      }
-    }
+    const errorMessage = ref(null)
 
     const onReset = () => {
       firstName.value = null
       lastName.value = null
       email.value = null
-      BSN.value = null
-      phone.value = null
+      bsn.value = null
+      phoneNumber.value = null
       password.value = null
       accept.value = false
     }
@@ -120,12 +128,12 @@ export default {
       firstName,
       lastName,
       email,
-      BSN,
-      phone,
+      bsn,
+      phoneNumber,
       password,
       accept,
-      onSubmit,
-      onReset
+      onReset,
+      errorMessage,
     }
   }
 }

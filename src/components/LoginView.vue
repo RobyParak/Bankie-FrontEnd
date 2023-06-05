@@ -46,7 +46,8 @@ export default {
   data() {
     return {
       email: '',
-      password: ''
+      password: '',
+      loginError: ''
     };
   },
   methods: {
@@ -67,17 +68,19 @@ export default {
           const role = decodedToken.auth;
 
           // Use the role to navigate to different routes or open different windows
-          //TODO something for users without an account - maybe another landing page?
           if (role === 'Customer') {
             this.$router.push('/userDashboard');
           } else if (role === 'Employee') {
             this.$router.push('/employeeDashboard');
-          } else {
+          } else if (role === 'User') {
+            this.loginError = 'Login was successful but you currently do not have an account';
+          }
+          else {
             console.error('Unknown role:', role);
           }
         })
           .catch(error => {
-            this.loginError = 'Login failed. Please check your credentials.'; // Set the login error message
+            this.loginError = 'Please check your credentials and try again';
             console.error('Login failed:', error);
           });
     }

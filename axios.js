@@ -32,19 +32,13 @@ export default {
     return apiClient.post('/login', loginData);
   },
 
-  // Get all users
-  getAllUsers(params) {
-    return apiClient.get('/users', { params });
-  },
-
   // Create a new user
   createUser(userData) {
     return apiClient.post('/users', userData);
   },
-
-  // Get a user by ID
-  getUserById(userId) {
-    return apiClient.get(`/users/${userId}`);
+  //get user's accounts
+  getBankAccounts(ownerId) {
+    return apiClient.get(`/accounts?ownerId=${ownerId}`);
   },
 
   // Update a user by ID
@@ -64,12 +58,12 @@ export default {
 
   // Create an account
   createAccount(accountData) {
-    return apiClient.post('/bankaccounts', accountData);
+    return apiClient.post('/accounts', accountData);
   },
 
   // Get account details
-  getAccountById(accountId) {
-    return apiClient.get(`/bankaccounts/${accountId}`);
+  getAccountByEmail(email) {
+    return apiClient.get(`/users?email=${email}`);
   },
 
   // Perform a transaction
@@ -78,7 +72,7 @@ export default {
   },
 
   // Get transaction history
-  getTransactionHistory() {
-    return apiClient.get('/transactions');
+  getTransactionHistory(transactionData) {
+    return apiClient.get('/transactions', transactionData);
   }
 };

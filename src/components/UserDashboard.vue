@@ -1,301 +1,289 @@
 <template>
-  <div class="q-pa-md">
-    <div class="q-gutter-y-md" style="max-width: 100%">
-      <h3>Employee Dashboard</h3>
-      <q-option-group
-        v-model="panel"
-        inline
-        :options="[
-          { label: 'Edit User/Bank information', value: 'edit' },
-          { label: 'New Bank Account', value: 'newBankAccount' },
-          { label: 'Delete User', value: 'delUser' },
-          { label: 'Deactivate Bank Account', value: 'delAccount' }
-        ]"
+  <q-btn class="q-ml-auto" id="logoutBtn" style="background: #f919a9; color: white" label="Logout" @click="logout" />
+  <q-layout view="hHh Lpr fFf">
+    <h3>Dashboard</h3>
+    <div style="display: flex; flex-direction: column; align-items: flex-start;">
+      <h4 style="text-align: left; padding-left: 1em; margin-bottom: 0;">Welcome, {{ user.firstName + " " + user.lastName}}!</h4>
+      <q-btn
+          label="Edit your info"
+          id="EditUser"
+          style="background: #f919a9; color: white; margin-top: 0.5em; margin-left: 3em;"
+          @click="toggleUserForm"
       />
+    </div>
 
-      <q-tab-panels v-model="panel" animated class="shadow-2 rounded-borders">
-        <q-tab-panel name="edit">
-          <div class="text-h6">Edit Information</div>
-          <q-input outlined bottom-slots v-model="text" label="Search Users" counter maxlength="30" :dense="dense">
-            <template v-slot:append>
-              <q-icon v-if="text !== ''" name="close" @click="text = ''" class="cursor-pointer" />
-              <q-icon name="search" />
-            </template>
-          </q-input>
-          <!-- User table -->
-          <q-table
-            :rows="usersRows"
-            :columns="usersColumns"
-            title="Users"
-            :rows-per-page-options="[]"
-            row-key="Fname"
-            binary-state-sort
-          >
-            <template #body="props">
-              <q-tr :props="props">
-                <q-td key="FirstName" :props="props">
-                        {{ props.row.Fname }}
-                        <q-popup-edit v-model="props.row.Fname" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
-                        </q-popup-edit>
-                    </q-td>
-                    <q-td key="LastName" :props="props">
-                        {{ props.row.Lname }}
-                        <q-popup-edit v-model="props.row.Lname" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
-                        </q-popup-edit>
-                    </q-td>
-                    <q-td key="Phone" :props="props">
-                        {{ props.row.phone }}
-                        <q-popup-edit v-model="props.row.phone" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
-                        </q-popup-edit>
-                    </q-td>
-                    <q-td key="Email" :props="props">
-                        {{ props.row.email }}
-                        <q-popup-edit v-model="props.row.email" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
-                        </q-popup-edit>
-                    </q-td>
-                    <q-td key="DailyLimit" :props="props">
-                        €{{ props.row.Dlimit }}
-                        <q-popup-edit v-model="props.row.Dlimit" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
-                        </q-popup-edit>
-                    </q-td>
-                    <q-td key="TransactionLimit" :props="props">
-                        €{{ props.row.Tlimit }}
-                        <q-popup-edit v-model="props.row.Tlimit" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
-                        </q-popup-edit>
-                    </q-td>
-                    <q-td key="Role" :props="props">
-                        {{ props.row.Role }}
-                        <q-popup-edit v-model="props.row.Role" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
-                        </q-popup-edit>
-                    </q-td>
-              </q-tr>
-            </template>
-          </q-table>
-
-          <div class="spacing" style="height: 100px;"></div>
-          <q-input outlined bottom-slots v-model="text" label="Search Bank Accounts" counter maxlength="30" :dense="dense">
-            <template v-slot:append>
-              <q-icon v-if="text !== ''" name="close" @click="text = ''" class="cursor-pointer" />
-              <q-icon name="search" />
-            </template>
-          </q-input>
-
-          <!-- Bank Account table -->
-          <q-table
-            :rows="bankAccountRows"
-            :columns="bankAccountColumns"
-            title="Bank Accounts"
-            :rows-per-page-options="[]"
-            row-key="iban"
-            binary-state-sort
-          >
-            <template #body="props">
-              <q-tr :props="props">
-                <q-td key="IBAN" :props="props">
-                  {{ props.row.iban }}
-                </q-td>
-                <q-td key="OwnerID" :props="props">
-                  {{ props.row.ownerID }}
-                </q-td>
-                <q-td key="Balance" :props="props">
-                  {{ props.row.balance }}
-                </q-td>
-                <q-td key="AbsoluteLimit" :props="props">
-                  <q-popup-edit v-model="props.row.absoluteLimit" buttons v-slot="scope">
-                    <q-input
-                      v-model="scope.modelValue"
-                      dense
-                      autofocus
-                      counter
-                      @keyup.enter="scope.set"
-                      @input="scope.modelValue = $event.target.value"
-                    />
-                  </q-popup-edit>
-                </q-td>
-                <q-td key="Status" :props="props">
-                  {{ props.row.status }}
-                </q-td>
-              </q-tr>
-            </template>
-          </q-table>
-        </q-tab-panel>
-    <!-- ADD A BANK ACCOUNT -->
-
-        <q-tab-panel name="newBankAccount">
-          <div class="text-h6">Add new Bank Account</div>
-          <div class="q-pa-md" style="justify-content: center; padding-left: 3em; max-width: 80%;">
-      <q-form @submit="onSubmit" @reset="onReset" class="q-gutter-md">
-        <q-select filled v-model="model" :options="options" label="User Account" />
+    <div v-if="showUserForm" class="q-pa-md">
+      <div class="q-gutter-y-md column" style="max-width: 300px">
         <q-input
-        filled
-        v-model="price"
-        prefix="€"
-        label="Amount"
-        mask="#.##"
-        fill-mask="0"
-        input-class="text-right"
-      />
-      <q-input
+            clearable
             filled
-            v-model="absoluteLimit"
-            label="Absolute Limit"
-            placeholder="€1000"
+            clear-icon="clear"
+            color="indigo"
+            v-model="user.firstName"
+            label="First Name"
+            :rules="[val => !!val || 'First Name is required', val => (val && val.length >= 2) || 'First Name must be more than or equal to 2 characters']"
+        >
+          <template v-if="user.firstName === updateUser.firstName" v-slot:append>
+            <q-icon name="cancel" @click.stop.prevent="user.firstName = ''" class="cursor-pointer" />
+          </template>
+        </q-input>
+        <q-input
+            clearable
+            filled
+            clear-icon="clear"
+            color="indigo"
+            v-model="user.lastName"
+            label="Last Name"
+            :rules="[val => !!val || 'Last Name is required', val => (val && val.length >= 2) || 'Last Name must be more than or equal to 2 characters']"
+        >
+          <template v-if="user.lastName === updateUser.lastName" v-slot:append>
+            <q-icon name="cancel" @click.stop.prevent="user.lastName = ''" class="cursor-pointer" />
+          </template>
+        </q-input>
+        <q-input
+            clearable
+            filled
+            clear-icon="clear"
+            color="indigo"
+            v-model="user.email"
+            label="Email"
+            :rules="[val => !!val || 'Email is required', val => /.+@.+\..+/.test(val) || 'Please enter a valid email']"
+        >
+          <template v-if="user.email === updateUser.email" v-slot:append>
+            <q-icon name="cancel" @click.stop.prevent="user.email = ''" class="cursor-pointer" />
+          </template>
+        </q-input>
+        <q-input
+            clearable
+            filled
+            clear-icon="clear"
+            color="indigo"
+            v-model="user.phoneNumber"
+            label="Phone Number"
+            :rules="[val => !!val || 'Phone Number is required', val => (val && val.length >= 10) || 'Phone Number must be more than or equal to 10 characters']"
+        >
+          <template v-if="user.phone === updateUser.phone" v-slot:append>
+            <q-icon name="cancel" @click.stop.prevent="user.phone = ''" class="cursor-pointer" />
+          </template>
+        </q-input>
+        <q-btn
+            label="Save"
+            id="saveUser"
+            style="background: #f919a9; color: white; margin-top: 0.5em; margin-left: 3em;"
+            @click="saveUser"
         />
-        <q-btn-toggle
-        v-model="model"
-        class="my-custom-toggle"
-        no-caps
-        rounded
-        unelevated
-        toggle-color="indigo-11"
-        color="white"
-        text-color="black"
-        :options="[
-          {label: 'Current Account', value: 'one'},
-          {label: 'Savings Account', value: 'two'}
-        ]"
-      />
-        <div>
-          <q-btn  class="q-ml-auto" style="background: #f919a9; color: white" label="Add New Bank Account" type="submit" />
-        </div>
-      </q-form>
+      </div>
     </div>
-    <!-- DELETE USER -->
-        </q-tab-panel>
-        <q-tab-panel name="delUser">
-          <div class="text-h6">Delete User</div>
-          <q-input outlined bottom-slots v-model="text" label="Search Users" counter maxlength="30" :dense="dense">
-  <template v-slot:append>
-    <q-icon name="search" />
-  </template>
-</q-input>
-  <q-table
-      flat bordered
-      :rows="usersRows"
-      :columns="usersColumns"
-      row-key="Fname"
-      selection="single"
-      v-model:selected="selectedUser"
-    />
-    <div class="q-mt-md">
-      Selected: {{ JSON.stringify(selectedUser) }}
-    </div>
-    <q-btn  class="q-ml-auto" style="background: #800000; color: white" label="Delete User" type="submit" />
-        </q-tab-panel>
-<!-- DEACTIVATE BANK ACCOUNT -->
-        <q-tab-panel name="delAccount">
-          <div class="text-h6">Deactivate Bank Account</div>
-          <q-input outlined bottom-slots v-model="text" label="Search Bank Accounts" counter maxlength="30" :dense="dense">
-  <template v-slot:append>
-    <q-icon name="search" />
-  </template>
-</q-input>
-          <q-table
-      flat bordered
-      :rows="bankAccountRows"
-      :columns="bankAccountColumns"
-      row-key="iban"
-      selection="single"
-      v-model:selected="selectedBankAccount"
-    />
-    <div class="q-mt-md">
-      Selected: {{ JSON.stringify(selectedBankAccount) }}
-    </div>
-    <q-btn  class="q-ml-auto" style="background: #800000; color: white" label="Deactivate Bank Account" type="submit" />
-        </q-tab-panel>
 
-      </q-tab-panels>
-    </div>
-  </div>
+    <q-page-container>
+      <q-splitter v-model="splitterPosition" class="my-splitter">
+        <q-page class="q-pa-md" style="padding-left: 5em; padding-top: 0" :style="{ width: '80%' }">
+          <h5 style="text-align: left;">Current Account Balance: {{ balance }}</h5>
+          <q-table
+              class="my-sticky-header-table"
+              flat
+              bordered
+              title="Current Account"
+              :rows="currentAccountRows"
+              :columns="columns"
+              row-key="name"
+          />
+
+          <h5 style="text-align: left;">Savings Account Balance: {{ balance }}</h5>
+          <q-table
+              class="my-sticky-header-table"
+              flat
+              bordered
+              title="Savings Account"
+              :rows="savingsAccountRows"
+              :columns="columns"
+              row-key="name"
+          />
+        </q-page>
+        <q-page class="q-pa-md" style="alignment: center; padding-right: 3em;" :style="{ width: '20%' }">
+          <q-input
+              filled
+              v-model="filterInput"
+              label="Search"
+              placeholder="Type to search transaction"
+              :dense="dense"
+              style="padding: 1em; width: 300px"
+          />
+          <q-btn class="q-ml-auto" id="transactionButton" label="Make a new transaction" to="/transaction" />
+        </q-page>
+      </q-splitter>
+    </q-page-container>
+  </q-layout>
 </template>
 
 <script>
-import { ref } from 'vue'
+import api from '../../axios.js'
+import jwtDecode from 'jwt-decode';
 
 export default {
   name: 'UserDashboard',
-  setup() {
-    const bankAccountColumns = [
-      { name: 'IBAN', align: 'left', label: 'IBAN', field: 'iban' },
-      { name: 'OwnerID', align: 'left', label: 'OwnerID', field: 'ownerID' },
-      { name: 'Balance', label: 'Balance', field: 'balance' },
-      { name: 'AbsoluteLimit', label: 'Absolute Limit (editable)', field: 'absoluteLimit' },
-      { name: 'Status', label: 'Status', field: 'status' },
-    ]
-
-    const bankAccountRows = ref([
-      {
-        iban: 'NL12345678900',
-        ownerID: 765,
-        balance: 1234.5678,
-        absoluteLimit: 1000,
-        status: 'Inactive',
-      },
-      {
-        iban: 'NL12345678900',
-        ownerID: 765,
-        balance: 1234.5678,
-        absoluteLimit: 1000,
-        status: 'Active',
-      },
-    ])
-
-    const usersColumns = [
-      { name: 'FirstName', align: 'left', label: 'First Name', field: 'Fname' },
-      { name: 'LastName', align: 'center', label: 'Last Name', field: 'Lname' },
-      { name: 'Phone', label: 'Phone', field: 'phone' },
-      { name: 'Email', label: 'Email', field: 'email' },
-      { name: 'DailyLimit', label: 'Daily Limit', field: 'Dlimit' },
-      { name: 'TransactionLimit', label: 'Transaction Limit', field: 'Tlimit' },
-      { name: 'Role', label: 'Role', field: 'Role' },
-    ]
-
-    const usersRows = ref([
-      {
-        Fname: 'John',
-        Lname: 'Doe',
-        phone: 12345678,
-        email: 'email@fakeemail.com',
-        Dlimit: 4.0,
-        Tlimit: 87,
-        Role: 'user',
-      },
-      {
-        Fname: 'John',
-        Lname: 'Doetoo',
-        phone: 12345678,
-        email: 'email@fakeemail.com',
-        Dlimit: 4.0,
-        Tlimit: 87,
-        Role: 'customer',
-      },
-    ])
+  data() {
     return {
-      bankAccountColumns,
-      panel: ref('edit'),
-      bankAccountRows,
-      usersColumns,
-      usersRows,
-      model: ref('one'),
-      selectedUser: ref([]),
-      selectedBankAccount: ref([]),
-    }
+      updateUser: {},
+      balance: 1000.0,
+      splitterPosition: 0,
+      bankAccounts: [],
+      currentAccount: {},
+      savingsAccount: {},
+      user : {},
+
+      currentAccountRows: [],
+      savingsAccountRows: [],
+      filterInput: '',
+      showUserForm: false,
+    };
   },
-}
+  mounted() {
+    const token = localStorage.getItem('token');
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      const email = decodedToken.sub;
+
+
+      api.getAccountByEmail(email)
+          .then(response => {
+            // Update the user data with the retrieved data
+            this.user = response.data[0];
+            localStorage.setItem('userId', JSON.stringify(this.user.id));
+            api.getBankAccounts(this.user.id)
+                .then(response => {
+                  this.bankAccounts = response.data;
+
+                  // Categorize bank accounts as current or saving
+                  this.bankAccounts.forEach(account => {
+                    if (account.type === 'Current') {
+                      this.currentAccount.push(account);
+                    } else if (account.type === 'Saving') {
+                      this.savingsAccount.push(account);
+                    }
+                  });
+          })
+          .catch(error => {
+            console.error('Error retrieving user data:', error);
+          });
+
+
+ this.fetchTransactions(this.currentAccount.iban);
+//TODO worry about the savings account
+          })
+          .catch(error => {
+            console.error('Error retrieving bank accounts:', error);
+          });
+    }
+      else {
+        this.$router.push('/login');
+      }
+  },
+  methods: {
+    fetchTransactions(iban) {
+      // Fetch transactions for the specified iban and current page
+      const transactionData = {
+        iban: iban,
+        page: this.currentPage,
+        pageSize: this.pageSize,
+      };
+      api.getTransactionHistory(transactionData)
+          .then(response => {
+            // Update the transactions data with the retrieved data
+            this.transactions = response.data.items;
+            this.totalTransactions = response.data.total;
+          })
+          .catch(error => {
+            console.error('Error retrieving transactions:', error);
+          });
+    },
+    changePage(page) {
+      // Update the current page and fetch transactions for the new page
+      this.currentPage = page;
+      this.fetchTransactions(this.currentAccountRows[0].iban);
+    },
+    logout() {
+      // Clear session data and route to log in page
+      localStorage.clear();
+      this.$router.push('/login');
+    },
+    toggleUserForm() {
+      this.showUserForm = !this.showUserForm;
+    },
+    saveUser() {
+      this.updatedUser = { ...this.user }; // Store the updated user data
+
+      // Perform the PUT request to the API with the updatedUser data
+      api.updateUserById(this.user.id, this.updatedUser)
+          .then(response => {
+            // Handle the response
+            console.log('User updated successfully:', response.data);
+          })
+          .catch(error => {
+            // Handle the error
+            console.error('Error updating user:', error);
+          });
+    },
+  },
+  computed: {
+    columns() {
+      return [
+        { name: 'date', required: true, label: 'Date', align: 'left', field: 'date', sortable: true },
+        { name: 'from', required: true, label: 'From', align: 'left', field: 'from', sortable: true },
+        { name: 'to', required: true, label: 'To', align: 'left', field: 'to', sortable: true },
+        { name: 'amount', required: true, label: 'Amount', align: 'right', field: 'amount', sortable: true },
+      ];
+    },
+  },
+};
+
 </script>
-<style lang="sass" scoped>
-.my-custom-toggle
-  border: 1px solid #027be3
+
+
+<style scoped>
+#logoutBtn {
+  border-radius: 20px;
+  padding: 8px 16px;
+  position:absolute;
+  top: 1em;
+  right:1em;
+}
+#EditUser {
+  margin-left: 3em;
+  position: relative;
+}
+#transactionButton {
+  border-radius: 20px;
+  padding: 8px 16px;
+  position: center;
+}
+
 </style>
 
-<style lang="sass" scoped>
-.my-custom-toggle
-  border: 1px solid #027be3
+<style lang="sass">
+.my-sticky-header-table
+  height: 310px
+  width: 70%
+
+  .q-table__top
+    background-color: #f919a9
+    color: white
+  .q-table__bottom
+    background-color: #ffffff
+
+  thead tr th
+    position: sticky
+    z-index: 1
+  thead tr:first-child th
+    top: 0
+
+  /* this is when the loading indicator appears */
+  &.q-table--loading thead tr:last-child th
+    /* height of all previous header rows */
+    top: 48px
+
+  /* prevent scrolling behind sticky top row on focus */
+  tbody
+    /* height of all previous header rows */
+    scroll-margin-top: 48px
 </style>
