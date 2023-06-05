@@ -36,12 +36,25 @@ export default {
   createUser(userData) {
     return apiClient.post('/users', userData);
   },
+
   //get transactions by iban
   getTransactionsByIbanFrom(iban) {
     return apiClient.get(`/transactions?accountfrom=${iban}`);
   },
   getTransactionsByIbanTo(iban) {
     return apiClient.get(`/transactions?accountto=${iban}`);
+
+    // Get all users
+    getAllUsers(params) {
+      return apiClient.get('/users', { params });
+    },
+      //get all bank accounts
+  getAllBankAccounts() {
+    return apiClient.get(`/accounts`);
+  },
+  //get user's accounts
+  getBankAccounts(ownerId) {
+    return apiClient.get(`/accounts?ownerId=${ownerId}`);
   },
 
   // Update a user by ID
@@ -53,6 +66,11 @@ export default {
   deleteUserById(userId) {
     return apiClient.delete(`/users/${userId}`);
   },
+
+    // Get all bankaccounts
+    getAllAccounts(params) {
+      return apiClient.get('/bankaccounts', { params });
+    },
 
   // Create an account
   createAccount(accountData) {
