@@ -336,7 +336,7 @@ export default {
         // Handle the error
         console.error('Error disabling bank account:', error);
       });
-    }
+    },
 
     saveUser(updatedUser) {
     api.updateUserById(updatedUser.id, updatedUser)
