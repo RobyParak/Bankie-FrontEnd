@@ -36,51 +36,45 @@
                 <q-td key="firstName" :props="props">
                         {{ props.row.firstName }}
                         <q-popup-edit v-model="props.row.firstName" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
+                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" @blur="updateUser(props.row)"/>
                         </q-popup-edit>
                     </q-td>
                     <q-td key="lastName" :props="props">
                         {{ props.row.lastName }}
                         <q-popup-edit v-model="props.row.lastName" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
+                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" @blur="updateUser(props.row)"/>
                         </q-popup-edit>
                     </q-td>
                     <q-td key="phoneNumber" :props="props">
                         {{ props.row.phoneNumber }}
                         <q-popup-edit v-model="props.row.phoneNumber" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
+                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" @blur="updateUser(props.row)"/>
                         </q-popup-edit>
                     </q-td>
                     <q-td key="Email" :props="props">
                         {{ props.row.email }}
                         <q-popup-edit v-model="props.row.email" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
+                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" @blur="updateUser(props.row)"/>
                         </q-popup-edit>
                     </q-td>
                     <q-td key="dailyLimit" :props="props">
                         €{{ props.row.dailyLimit }}
                         <q-popup-edit v-model="props.row.dailyLimit" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
+                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" @blur="updateUser(props.row)"/>
                         </q-popup-edit>
                     </q-td>
                     <q-td key="transactionLimit" :props="props">
                         €{{ props.row.transactionLimit }}
                         <q-popup-edit v-model="props.row.transactionLimit" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
+                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" @blur="updateUser(props.row)"/>
                         </q-popup-edit>
                     </q-td>
                     <q-td key="role" :props="props">
-                        {{ props.row.role }}
-                        <q-popup-edit v-model="props.row.role" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
-                        </q-popup-edit>
-                    </q-td>
+                  {{ props.row.role }}
+                </q-td>
                     <q-td key="bsn" :props="props">
-                        {{ props.row.bsn }}
-                        <q-popup-edit v-model="props.row.bsn" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
-                        </q-popup-edit>
-                    </q-td>
+                  {{ props.row.bsn }}
+                </q-td>
               </q-tr>
             </template>
           </q-table>
@@ -265,7 +259,7 @@ export default {
       { name: 'bsn', label: 'BSN', field: 'bsn' },
     ];
 
-    const usersRows = ref([]);
+    const usersRows = ref([]); //make the edited rows reactive
 
     const getAllUsers = async () => {
       try {
@@ -300,6 +294,17 @@ export default {
         console.error(error);
       }
     },
+    updateUser(user) {
+    api.updateUserById(user.id, user)
+      .then(response => {
+        // Handle the response
+        console.log('User updated successfully:', response.data);
+      })
+      .catch(error => {
+        // Handle the error
+        console.error('Error updating user:', error);
+      });
+  },
   },
 };
 
