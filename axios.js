@@ -5,20 +5,20 @@ const apiClient = axios.create({
 });
 
 // Add an interceptor to set the token in the request headers
-// apiClient.interceptors.request.use(config => {
-//   const token = localStorage.getItem('token');
-//   if (token) {
-//     config.headers['Authorization'] = `Bearer ${token}`;
-//   }
-//   return config;
-// }, error => {
-//   return Promise.reject(error);
-// });
+apiClient.interceptors.request.use(config => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers['Authorization'] = `Bearer ${token}`;
+  }
+  return config;
+}, error => {
+  return Promise.reject(error);
+});
 
 // Enable CORS headers
 apiClient.interceptors.response.use(response => {
   // Add CORS headers to the response
-  response.headers['Access-Control-Allow-Origin'] = 'http://localhost:8080';
+  response.headers['Access-Control-Allow-Origin'] = '*';
   response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE';
   response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization';
 
