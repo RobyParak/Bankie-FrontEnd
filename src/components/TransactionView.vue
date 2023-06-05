@@ -162,7 +162,6 @@ export default {
         .catch(error => {
           console.error('Error retrieving user data:', error);
         });
-
   },
   setup() {
     const emailInput = ref('');
@@ -221,6 +220,25 @@ export default {
       bankAccount,
       transactionLabels,
     };
+  },
+  methods: {
+    createTransaction() {
+      //TODO check with Mark about userId in localstorage
+      const transactionData = {
+        userId: localStorage.getItem('userId'),
+        from: this.bankAccount.from,
+        to: this.bankAccount.to,
+        amount: this.price,
+        text: this.text,
+      };
+      api.performTransaction(transactionData)
+          .then(response => {
+            console.log(response.data);
+          })
+          .catch(error => {
+            console.error('Error creating transaction:', error);
+          });
+    },
   },
 };
 </script>
