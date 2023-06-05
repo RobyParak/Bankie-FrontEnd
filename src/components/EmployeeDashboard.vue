@@ -16,19 +16,19 @@
       <q-tab-panels v-model="panel" animated class="shadow-2 rounded-borders">
         <q-tab-panel name="edit">
           <div class="text-h6">Edit Information</div>
-          <q-input outlined bottom-slots v-model="text" label="Search Users" counter maxlength="30" :dense="dense">
+          <q-input outlined bottom-slots v-model="userSearchText" label="Search Users" counter maxlength="30" :dense="dense">
             <template v-slot:append>
-              <q-icon v-if="text !== ''" name="close" @click="text = ''" class="cursor-pointer" />
+              <q-icon v-if="userSearchText !== ''" name="close" @click="userSearchText = ''" class="cursor-pointer" />
               <q-icon name="search" />
             </template>
           </q-input>
           <!-- User table -->
           <q-table
-            :rows="usersRows"
+            :rows="filteredUsersRows"
             :columns="usersColumns"
             title="Users"
             :rows-per-page-options="[]"
-            row-key="Fname"
+            row-key="firstname"
             binary-state-sort
           >
             <template #body="props">
@@ -80,16 +80,16 @@
           </q-table>
 
           <div class="spacing" style="height: 100px;"></div>
-          <q-input outlined bottom-slots v-model="text" label="Search Bank Accounts" counter maxlength="30" :dense="dense">
+          <q-input outlined bottom-slots v-model="bankAccountSearchText" label="Search Bank Accounts" counter maxlength="30" :dense="dense">
             <template v-slot:append>
-              <q-icon v-if="text !== ''" name="close" @click="text = ''" class="cursor-pointer" />
+              <q-icon v-if="bankAccountSearchText !== ''" name="close" @click="bankAccountSearchText = ''" class="cursor-pointer" />
               <q-icon name="search" />
             </template>
           </q-input>
 
           <!-- Bank Account table -->
           <q-table
-            :rows="bankAccountRows"
+            :rows="filteredBankAccountRows"
             :columns="bankAccountColumns"
             title="Bank Accounts"
             :rows-per-page-options="[]"
@@ -215,10 +215,11 @@
 
 <script>
 import api from '../../axios.js';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 
 export default {
   setup() {
+    
     const bankAccountColumns = [
       { name: 'iban', align: 'left', label: 'IBAN', field: 'iban' },
       { name: 'ownerId', label: 'Owner ID', field: 'ownerId' },
@@ -258,12 +259,29 @@ export default {
         console.error(error);
       }
     };
+    const userSearchText = ref('');
+    const bankAccountSearchText = ref('');
+    const filteredUsersRows = computed(() => {
+      return usersRows.value.filter(row =>
+        row.firstName.toLowerCase().includes(userSearchText.value.toLowerCase()) ||
+        row.lastName.toLowerCase().includes(userSearchText.value.toLowerCase()) ||
+        row.phoneNumber.includes(userSearchText.value) ||
+        row.email.toLowerCase().includes(userSearchText.value.toLowerCase()) ||
+        row.role.toLowerCase().includes(userSearchText.value.toLocaleLowerCase())
+      );
+    });
+    const filteredBankAccountRows = computed(() => {
+  return bankAccountRows.value.filter(row =>
+    row.iban.toLowerCase().includes(bankAccountSearchText.value.toLowerCase()) ||
+    String(row.ownerId).includes(bankAccountSearchText.value)
+  );
+});
+
 
     onMounted(() => {
       getAllUsers();
       getAllBankAccounts();
     });
-
     return {
       bankAccountColumns,
       panel: ref('edit'),
@@ -273,6 +291,10 @@ export default {
       model: ref('one'),
       selectedUser: ref([]),
       selectedBankAccount: ref([]),
+      userSearchText,
+      bankAccountSearchText,
+      filteredUsersRows,
+      filteredBankAccountRows,
     };
   },
   methods: {
