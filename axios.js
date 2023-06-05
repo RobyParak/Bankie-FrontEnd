@@ -37,12 +37,11 @@ export default {
     return apiClient.post('/users', userData);
   },
   //get transactions by iban
-  getTransactionsByIban(iban) {
-    return apiClient.get(`/transactions?iban=${iban}`);
+  getTransactionsByIbanFrom(iban) {
+    return apiClient.get(`/transactions?accountfrom=${iban}`);
   },
-
-  getBankAccountByIban(iban) {
-    return apiClient.get(`/accounts?iban=${iban}`);
+  getTransactionsByIbanTo(iban) {
+    return apiClient.get(`/transactions?accountto=${iban}`);
   },
 
   // Update a user by ID
