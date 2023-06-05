@@ -205,7 +205,7 @@
     <div class="q-mt-md">
       Selected: {{ JSON.stringify(selectedBankAccount) }}
     </div>
-    <q-btn  class="q-ml-auto" style="background: #800000; color: white" label="Deactivate Bank Account" type="submit" />
+    <q-btn  class="q-ml-auto" style="background: #800000; color: white" label="Deactivate Bank Account" type="submit" @click="disableBankie" />
         </q-tab-panel>
 
       </q-tab-panels>
@@ -328,6 +328,20 @@ export default {
             console.error('Error deleting user:', error);
           });
     },
+    disableBankie()
+    {
+      //TODO encrypt IBAN once Catalin has added encryption to backend
+      // 0 = active, 1 = disabled
+     this.selectedBankAccount[0].statusId = 1;
+      api.disableBankAccount(this.selectedBankAccount[0].iban, this.selectedBankAccount[0])
+      .then(response => {
+        console.log('Bank account disabled successfully:', response.data);
+      })
+      .catch(error => {
+        // Handle the error
+        console.error('Error disabling bank account:', error);
+      });
+    }
   },
 };
 
