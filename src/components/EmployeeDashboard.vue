@@ -24,49 +24,55 @@
           </q-input>
           <!-- User table -->
           <q-table
+            style="height: 400px"
+            flat bordered
+            ref="tableRef"
             :rows="filteredUsersRows"
             :columns="usersColumns"
-            title="Users"
-            :rows-per-page-options="[]"
+            :table-colspan="9"
             row-key="firstname"
-            binary-state-sort
+            virtual-scroll
+            :virtual-scroll-item-size="48"
+            :pagination="pagination"
+            :rows-per-page-options="[0]"
+            v-model:expanded="expanded"
           >
             <template #body="props">
-              <q-tr :props="props">
+              <q-tr>
                 <q-td key="firstName" :props="props" class="editable">
-                        {{ props.row.firstName }}
-                        <q-popup-edit v-model="props.row.firstName" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" @blur="updateUser(props.row)"/>
-                        </q-popup-edit>
-                    </q-td>
+                  {{ props.row.firstName }}
+                  <q-popup-edit v-model="props.row.firstName" buttons @save="saveUser(props.row)" v-slot="scope">
+                    <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set(); saveUser(props.row)"/>
+                  </q-popup-edit>
+                </q-td>
                     <q-td key="lastName" :props="props" class="editable">
                         {{ props.row.lastName }}
                         <q-popup-edit v-model="props.row.lastName" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" @blur="updateUser(props.row)"/>
+                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set(); saveUser(props.row)"/>
                         </q-popup-edit>
                     </q-td>
                     <q-td key="phoneNumber" :props="props" class="editable">
                         {{ props.row.phoneNumber }}
                         <q-popup-edit v-model="props.row.phoneNumber" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" @blur="updateUser(props.row)"/>
+                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set(); saveUser(props.row)"/>
                         </q-popup-edit>
                     </q-td>
                     <q-td key="Email" :props="props" class="editable">
                         {{ props.row.email }}
                         <q-popup-edit v-model="props.row.email" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" @blur="updateUser(props.row)"/>
+                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set(); saveUser(props.row)"/>
                         </q-popup-edit>
                     </q-td>
                     <q-td key="dailyLimit" :props="props" class="editable">
                         €{{ props.row.dailyLimit }}
                         <q-popup-edit v-model="props.row.dailyLimit" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" @blur="updateUser(props.row)"/>
+                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set(); saveUser(props.row)"/>
                         </q-popup-edit>
                     </q-td>
                     <q-td key="transactionLimit" :props="props" class="editable">
                         €{{ props.row.transactionLimit }}
                         <q-popup-edit v-model="props.row.transactionLimit" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" @blur="updateUser(props.row)"/>
+                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set(); saveUser(props.row)"/>
                         </q-popup-edit>
                     </q-td>
                     <q-td key="role" :props="props">
@@ -306,17 +312,6 @@ export default {
         console.error(error);
       }
     },
-    updateUser(user) {
-      api.updateUserById(user.id, user)
-          .then(response => {
-            // Handle the response
-            console.log('User updated successfully:', response.data);
-          })
-          .catch(error => {
-            // Handle the error
-            console.error('Error updating user:', error);
-          });
-    },
     deleteUser() {
       const user =this.selectedUser[0];
       api.deleteUserById(user.id)
@@ -342,6 +337,20 @@ export default {
         console.error('Error disabling bank account:', error);
       });
     }
+
+    saveUser(updatedUser) {
+    api.updateUserById(updatedUser.id, updatedUser)
+    .then(response => {
+      // Handle the response
+      console.log('User updated successfully:', response.data);
+      console.log(updatedUser);
+    })
+    .catch(error => {
+      // Handle the error
+      console.error('Error updating user:', error);
+    });
+},
+
   },
 };
 
