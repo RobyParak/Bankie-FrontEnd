@@ -82,11 +82,13 @@
 <script>
 import api from '../../axios.js'
 import { ref, computed } from "vue";
+import jwtDecode from "jwt-decode";
 
 export default {
   name: "TransactionView.vue",
   data() {
     return {
+      user: {},
       bankAccounts: [],
       bankAccountFrom: '',
       bankAccountTo: '',
@@ -97,21 +99,35 @@ export default {
     };
   },
   mounted() {
-    api.getBankAccounts(localStorage.getItem('userId'))
-      .then(response => {
-        this.bankAccounts = response.data;
+    const token = localStorage.getItem('token');
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      const email = decodedToken.sub;
 
-        // Populate bank account options
-        this.bankAccountFromOption = this.bankAccounts.map(account => ({
-          label: account.iban,
-          value: account.type
-        }));
-      })
-      .catch(error => {
-        console.error('Error retrieving user data:', error);
-      });
+
+      api.getAccountByEmail(email)
+          .then(response => {
+            // Update the user data with the retrieved data
+            this.user = response.data[0];
+          })
+          .catch(error => {
+            console.error('Error retrieving user data:', error);
+          });
+    }
+      api.getBankAccounts(localStorage.getItem('userId'))
+          .then(response => {
+            this.bankAccounts = response.data;
+
+            // Populate bank account options
+            this.bankAccountFromOption = this.bankAccounts.map(account => ({
+              label: account.iban,
+              value: account.type
+            }));
+          })
+          .catch(error => {
+            console.error('Error retrieving user data:', error);
+          });
   },
-
   setup() {
     const text = ref('');
     const price = ref('');
@@ -150,11 +166,12 @@ export default {
   methods: {
     createTransaction() {
       const transactionData = {
-        userId: localStorage.getItem('userId'),
-        from: this.bankAccountFrom,
-        to: this.bankAccountTo,
+        userPerforming: this.user.id,
+        accountFrom: this.bankAccountFrom,
+        accountTo: this.bankAccountTo,
         amount: this.price,
-        text: this.text,
+        time: new Date().toISOString(),
+        comment: this.text,
       };
       api.performTransaction(transactionData)
         .then(response => {
