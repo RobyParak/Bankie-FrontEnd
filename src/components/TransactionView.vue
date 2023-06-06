@@ -31,7 +31,7 @@
           </div>
           <div class="q-pa-md" style="display: grid; float:right; height: 600px; width: 50%;">
             <div class="q-gutter-y-md column" style="max-width: 300px;">
-              <q-input filled v-model="price" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask/>
+              <q-input filled v-model="amount" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask/>
               <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" @click="createTransaction" />
             </div>
           </div>
@@ -55,7 +55,9 @@
             </div>
               <q-input standout="bg-indigo-11 text-white" v-model="text" label="Custom standout" />
               <q-input standout="bg-indigo-11 text-white" v-model="text" label="Custom standout" />
-              <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" @click="createTransaction" />
+            <q-input filled v-model="amount" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask/>
+
+            <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" @click="createTransaction" />
             </div>
         </q-tab-panel>
       </q-tab-panels>
@@ -118,7 +120,7 @@ export default {
                   // Populate bank account options
                   this.bankAccountFromOption = this.bankAccounts.map(account => ({
                     label: account.iban,
-                    value: account.type
+                    value: account.iban
                   }));
                 })
                 .catch(error => {
@@ -132,7 +134,7 @@ export default {
   },
   setup() {
     const text = ref('');
-    const price = ref('');
+    const amount = ref('');
     const tab = ref('normal_transaction');
     const bankAccountFromOption = ref([]);
     const radio = ref('withdraw');
@@ -158,7 +160,7 @@ export default {
 
     return {
       text,
-      price,
+      amount,
       tab,
       bankAccountFromOption,
       bankAccountToOption,
@@ -173,16 +175,16 @@ export default {
 
         const transactionData = {
           userPerforming: this.user.id,
-          accountFrom: this.bankAccountFrom.label,
+          accountFrom: this.bankAccountFrom.value,
           accountTo: this.bankAccountTo,
-          amount: this.price,
+          amount: this.amount,
           time: formattedTime,
           comment: this.text,
         };
-      console.log(transactionData)
       api.performTransaction(transactionData)
         .then(response => {
           console.log(response.data);
+          console.log('Transaction created successfully');
         })
         .catch(error => {
           console.error('Error creating transaction:', error);
