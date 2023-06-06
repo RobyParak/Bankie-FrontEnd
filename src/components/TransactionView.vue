@@ -32,7 +32,7 @@
           <div class="q-pa-md" style="display: grid; float:right; height: 600px; width: 50%;">
             <div class="q-gutter-y-md column" style="max-width: 300px;">
               <q-input filled v-model="price" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask/>
-              <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" />
+              <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" on-click="createTransaction" />
             </div>
           </div>
         </q-tab-panel>
@@ -55,7 +55,7 @@
             </div>
               <q-input standout="bg-indigo-11 text-white" v-model="text" label="Custom standout" />
               <q-input standout="bg-indigo-11 text-white" v-model="text" label="Custom standout" />
-              <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" />
+              <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" on-click="createTransaction" />
             </div>
         </q-tab-panel>
       </q-tab-panels>
@@ -114,7 +114,7 @@ export default {
             console.error('Error retrieving user data:', error);
           });
     }
-      api.getBankAccounts(localStorage.getItem('userId'))
+      api.getBankAccounts(this.user.id)
           .then(response => {
             this.bankAccounts = response.data;
 
