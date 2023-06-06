@@ -16,80 +16,86 @@
       <q-tab-panels v-model="panel" animated class="shadow-2 rounded-borders">
         <q-tab-panel name="edit">
           <div class="text-h6">Edit Information</div>
-          <q-input outlined bottom-slots v-model="text" label="Search Users" counter maxlength="30" :dense="dense">
+          <q-input outlined bottom-slots v-model="userSearchText" label="Search Users" counter maxlength="30" :dense="dense">
             <template v-slot:append>
-              <q-icon v-if="text !== ''" name="close" @click="text = ''" class="cursor-pointer" />
+              <q-icon v-if="userSearchText !== ''" name="close" @click="userSearchText = ''" class="cursor-pointer" />
               <q-icon name="search" />
             </template>
           </q-input>
           <!-- User table -->
           <q-table
-            :rows="usersRows"
+            style="height: 400px"
+            flat bordered
+            ref="tableRef"
+            :rows="filteredUsersRows"
             :columns="usersColumns"
-            title="Users"
-            :rows-per-page-options="[]"
-            row-key="Fname"
-            binary-state-sort
+            :table-colspan="9"
+            row-key="firstname"
+            virtual-scroll
+            :virtual-scroll-item-size="48"
+            :pagination="pagination"
+            :rows-per-page-options="[0]"
+            v-model:expanded="expanded"
           >
             <template #body="props">
-              <q-tr :props="props">
-                <q-td key="FirstName" :props="props">
-                        {{ props.row.Fname }}
-                        <q-popup-edit v-model="props.row.Fname" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
+              <q-tr>
+                <q-td key="firstName" :props="props" class="editable">
+                  {{ props.row.firstName }}
+                  <q-popup-edit v-model="props.row.firstName" buttons @save="saveUser(props.row)" v-slot="scope">
+                    <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set(); saveUser(props.row)"/>
+                  </q-popup-edit>
+                </q-td>
+                    <q-td key="lastName" :props="props" class="editable">
+                        {{ props.row.lastName }}
+                        <q-popup-edit v-model="props.row.lastName" buttons v-slot="scope">
+                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set(); saveUser(props.row)"/>
                         </q-popup-edit>
                     </q-td>
-                    <q-td key="LastName" :props="props">
-                        {{ props.row.Lname }}
-                        <q-popup-edit v-model="props.row.Lname" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
+                    <q-td key="phoneNumber" :props="props" class="editable">
+                        {{ props.row.phoneNumber }}
+                        <q-popup-edit v-model="props.row.phoneNumber" buttons v-slot="scope">
+                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set(); saveUser(props.row)"/>
                         </q-popup-edit>
                     </q-td>
-                    <q-td key="Phone" :props="props">
-                        {{ props.row.phone }}
-                        <q-popup-edit v-model="props.row.phone" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
-                        </q-popup-edit>
-                    </q-td>
-                    <q-td key="Email" :props="props">
+                    <q-td key="Email" :props="props" class="editable">
                         {{ props.row.email }}
                         <q-popup-edit v-model="props.row.email" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
+                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set(); saveUser(props.row)"/>
                         </q-popup-edit>
                     </q-td>
-                    <q-td key="DailyLimit" :props="props">
-                        €{{ props.row.Dlimit }}
-                        <q-popup-edit v-model="props.row.Dlimit" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
+                    <q-td key="dailyLimit" :props="props" class="editable">
+                        €{{ props.row.dailyLimit }}
+                        <q-popup-edit v-model="props.row.dailyLimit" buttons v-slot="scope">
+                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set(); saveUser(props.row)"/>
                         </q-popup-edit>
                     </q-td>
-                    <q-td key="TransactionLimit" :props="props">
-                        €{{ props.row.Tlimit }}
-                        <q-popup-edit v-model="props.row.Tlimit" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
+                    <q-td key="transactionLimit" :props="props" class="editable">
+                        €{{ props.row.transactionLimit }}
+                        <q-popup-edit v-model="props.row.transactionLimit" buttons v-slot="scope">
+                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set(); saveUser(props.row)"/>
                         </q-popup-edit>
                     </q-td>
-                    <q-td key="Role" :props="props">
-                        {{ props.row.Role }}
-                        <q-popup-edit v-model="props.row.Role" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
-                        </q-popup-edit>
-                    </q-td>
+                    <q-td key="role" :props="props">
+                  {{ props.row.role }}
+                </q-td>
+                    <q-td key="bsn" :props="props">
+                  {{ props.row.bsn }}
+                </q-td>
               </q-tr>
             </template>
           </q-table>
 
           <div class="spacing" style="height: 100px;"></div>
-          <q-input outlined bottom-slots v-model="text" label="Search Bank Accounts" counter maxlength="30" :dense="dense">
+          <q-input outlined bottom-slots v-model="bankAccountSearchText" label="Search Bank Accounts" counter maxlength="30" :dense="dense">
             <template v-slot:append>
-              <q-icon v-if="text !== ''" name="close" @click="text = ''" class="cursor-pointer" />
+              <q-icon v-if="bankAccountSearchText !== ''" name="close" @click="bankAccountSearchText = ''" class="cursor-pointer" />
               <q-icon name="search" />
             </template>
           </q-input>
 
           <!-- Bank Account table -->
           <q-table
-            :rows="bankAccountRows"
+            :rows="filteredBankAccountRows"
             :columns="bankAccountColumns"
             title="Bank Accounts"
             :rows-per-page-options="[]"
@@ -98,29 +104,26 @@
           >
             <template #body="props">
               <q-tr :props="props">
-                <q-td key="IBAN" :props="props">
+                <q-td key="iban" :props="props">
                   {{ props.row.iban }}
                 </q-td>
-                <q-td key="OwnerID" :props="props">
-                  {{ props.row.ownerID }}
+                <q-td key="ownerId" :props="props">
+                  {{ props.row.ownerId }}
                 </q-td>
-                <q-td key="Balance" :props="props">
-                  {{ props.row.balance }}
+                <q-td key="statusId" :props="props">
+                  {{ props.row.statusId === 0 ? 'Active' : 'Inactive' }}
                 </q-td>
-                <q-td key="AbsoluteLimit" :props="props">
+                <q-td key="amount" :props="props">
+                  {{ props.row.amount }}
+                </q-td>
+                <q-td key="absoluteLimit" :props="props" class="editable">
+                  €{{ props.row.absoluteLimit }}
                   <q-popup-edit v-model="props.row.absoluteLimit" buttons v-slot="scope">
-                    <q-input
-                      v-model="scope.modelValue"
-                      dense
-                      autofocus
-                      counter
-                      @keyup.enter="scope.set"
-                      @input="scope.modelValue = $event.target.value"
-                    />
+                    <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
                   </q-popup-edit>
                 </q-td>
-                <q-td key="Status" :props="props">
-                  {{ props.row.status }}
+                <q-td key="typeId" :props="props">
+                  {{ props.row.typeId === 0 ? 'Savings' : 'Current' }}
                 </q-td>
               </q-tr>
             </template>
@@ -180,7 +183,7 @@
       flat bordered
       :rows="usersRows"
       :columns="usersColumns"
-      row-key="Fname"
+      row-key="firstName"
       selection="single"
       v-model:selected="selectedUser"
     />
@@ -217,62 +220,74 @@
 </template>
 
 <script>
-import axios from 'axios';
-import { ref, onMounted } from 'vue';
+import api from '../../axios.js';
+import { ref, onMounted, computed } from 'vue';
 
 export default {
-  name: 'UserDashboard',
   setup() {
+    
     const bankAccountColumns = [
-      { name: 'IBAN', align: 'left', label: 'IBAN', field: 'iban' },
-      { name: 'OwnerID', align: 'left', label: 'OwnerID', field: 'ownerID' },
-      { name: 'Balance', label: 'Balance', field: 'balance' },
-      { name: 'AbsoluteLimit', label: 'Absolute Limit (editable)', field: 'absoluteLimit' },
-      { name: 'Status', label: 'Status', field: 'status' },
+      { name: 'iban', align: 'left', label: 'IBAN', field: 'iban' },
+      { name: 'ownerId', label: 'Owner ID', field: 'ownerId' },
+      { name: 'statusId', label: 'status', field: 'statusId' },
+      { name: 'amount', label: 'Balance', field: 'amount' },
+      { name: 'absoluteLimit', label: 'Absolute Limit (editable)', field: 'absoluteLimit'},
+      { name: 'typeId', label: 'Type ID', field: 'typeId' },
     ];
 
-    const bankAccountRows = ref([
-      {
-        iban: 'NL12345678900',
-        ownerID: 765,
-        balance: 1234.5678,
-        absoluteLimit: 1000,
-        status: 'Inactive',
-      },
-      {
-        iban: 'NL12345678900',
-        ownerID: 765,
-        balance: 1234.5678,
-        absoluteLimit: 1000,
-        status: 'Active',
-      },
-    ]);
+    const bankAccountRows = ref([]);
 
     const usersColumns = [
-      { name: 'FirstName', align: 'left', label: 'First Name', field: 'Fname' },
-      { name: 'LastName', align: 'center', label: 'Last Name', field: 'Lname' },
-      { name: 'Phone', label: 'Phone', field: 'phone' },
+      { name: 'firstName', align: 'left', label: 'First Name', field: 'firstName' },
+      { name: 'lastName', align: 'center', label: 'Last Name', field: 'lastName' },
+      { name: 'phoneNumber', label: 'Phone', field: 'phoneNumber' },
       { name: 'Email', label: 'Email', field: 'email' },
-      { name: 'DailyLimit', label: 'Daily Limit', field: 'Dlimit' },
-      { name: 'TransactionLimit', label: 'Transaction Limit', field: 'Tlimit' },
-      { name: 'Role', label: 'Role', field: 'Role' },
+      { name: 'dailyLimit', label: 'Daily Limit', field: 'dailyLimit' },
+      { name: 'transactionLimit', label: 'Transaction Limit', field: 'transactionLimit' },
+      { name: 'role', label: 'Role', field: 'role' },
+      { name: 'bsn', label: 'BSN', field: 'bsn' },
     ];
 
-    const usersRows = ref([]);
-
+    const usersRows = ref([]); 
     const getAllUsers = async () => {
       try {
-        const response = await axios.get('/users');
+        const response = await api.getAllUsers();
         usersRows.value = response.data;
       } catch (error) {
         console.error(error);
       }
     };
+    const getAllBankAccounts = async () => {
+      try {
+        const response = await api.getAllBankAccounts();
+        bankAccountRows.value = response.data;
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    const userSearchText = ref('');
+    const bankAccountSearchText = ref('');
+    const filteredUsersRows = computed(() => {
+      return usersRows.value.filter(row =>
+        row.firstName.toLowerCase().includes(userSearchText.value.toLowerCase()) ||
+        row.lastName.toLowerCase().includes(userSearchText.value.toLowerCase()) ||
+        row.phoneNumber.includes(userSearchText.value) ||
+        row.email.toLowerCase().includes(userSearchText.value.toLowerCase()) ||
+        row.role.toLowerCase().includes(userSearchText.value.toLocaleLowerCase())
+      );
+    });
+    const filteredBankAccountRows = computed(() => {
+  return bankAccountRows.value.filter(row =>
+    row.iban.toLowerCase().includes(bankAccountSearchText.value.toLowerCase()) ||
+    String(row.ownerId).includes(bankAccountSearchText.value)
+  );
+});
+
 
     onMounted(() => {
       getAllUsers();
+      getAllBankAccounts();
     });
-
     return {
       bankAccountColumns,
       panel: ref('edit'),
@@ -282,12 +297,46 @@ export default {
       model: ref('one'),
       selectedUser: ref([]),
       selectedBankAccount: ref([]),
+      userSearchText,
+      bankAccountSearchText,
+      filteredUsersRows,
+      filteredBankAccountRows,
     };
   },
-}
+  methods: {
+    async getAllUsers() {
+      try {
+        const response = await api.getAllUsers();
+        this.usersRows = response.data;
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    saveUser(updatedUser) {
+    api.updateUserById(updatedUser.id, updatedUser)
+    .then(response => {
+      // Handle the response
+      console.log('User updated successfully:', response.data);
+      console.log(updatedUser);
+    })
+    .catch(error => {
+      // Handle the error
+      console.error('Error updating user:', error);
+    });
+},
+  },
+};
+
 </script>
 
 <style lang="sass" scoped>
 .my-custom-toggle
   border: 1px solid #027be3
+</style>
+<style>
+.editable{
+  font-size: 24px;
+  font-weight: bold;
+  color: blue;
+}
 </style>

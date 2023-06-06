@@ -36,6 +36,14 @@ export default {
   createUser(userData) {
     return apiClient.post('/users', userData);
   },
+    // Get all users
+    getAllUsers(params) {
+      return apiClient.get('/users', { params });
+    },
+      //get all bank accounts
+  getAllBankAccounts() {
+    return apiClient.get(`/accounts`);
+  },
   //get user's accounts
   getBankAccounts(ownerId) {
     return apiClient.get(`/accounts?ownerId=${ownerId}`);
@@ -50,6 +58,11 @@ export default {
   deleteUserById(userId) {
     return apiClient.delete(`/users/${userId}`);
   },
+
+    // Get all bankaccounts
+    getAllAccounts(params) {
+      return apiClient.get('/bankaccounts', { params });
+    },
 
   // Create an account
   createAccount(accountData) {
