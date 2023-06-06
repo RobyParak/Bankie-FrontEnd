@@ -1,5 +1,4 @@
 <template>
-  <q-btn class="q-ml-auto" id="logoutBtn" style="background: #f919a9; color: white" label="Logout" @click="logout" />
   <div class="q-pa-md">
     <div class="q-gutter-y-md" style="max-width: 100%">
       <h3>Employee Dashboard</h3>
@@ -8,11 +7,11 @@
         inline
         :options="[
           { label: 'Edit User/Bank information', value: 'edit' },
+          { label: 'New Bank Account', value: 'newBankAccount' },
           { label: 'Delete User', value: 'delUser' },
           { label: 'Deactivate Bank Account', value: 'delAccount' }
         ]"
       />
-      <q-btn class="q-ml-auto" id="userDashBtn" style="background: #f919a9; color: white" label="User DashBoard" @click="goToUserDashBoard" v-if="showUserDashboardButton"/>
 
       <q-tab-panels v-model="panel" animated class="shadow-2 rounded-borders">
         <q-tab-panel name="edit">
@@ -130,8 +129,49 @@
             </template>
           </q-table>
         </q-tab-panel>
+    <!-- ADD A BANK ACCOUNT -->
 
+        <q-tab-panel name="newBankAccount">
+          <div class="text-h6">Add new Bank Account</div>
+          <div class="q-pa-md" style="justify-content: center; padding-left: 3em; max-width: 80%;">
+      <q-form @submit="onSubmit" @reset="onReset" class="q-gutter-md">
+        <q-select filled v-model="model" :options="options" label="User Account" />
+        <q-input
+        filled
+        v-model="price"
+        prefix="€"
+        label="Amount"
+        mask="#.##"
+        fill-mask="0"
+        input-class="text-right"
+      />
+      <q-input
+            filled
+            v-model="absoluteLimit"
+            label="Absolute Limit"
+            placeholder="€1000"
+        />
+        <q-btn-toggle
+        v-model="model"
+        class="my-custom-toggle"
+        no-caps
+        rounded
+        unelevated
+        toggle-color="indigo-11"
+        color="white"
+        text-color="black"
+        :options="[
+          {label: 'Current Account', value: 'one'},
+          {label: 'Savings Account', value: 'two'}
+        ]"
+      />
+        <div>
+          <q-btn  class="q-ml-auto" style="background: #f919a9; color: white" label="Add New Bank Account" type="submit" />
+        </div>
+      </q-form>
+    </div>
     <!-- DELETE USER -->
+        </q-tab-panel>
         <q-tab-panel name="delUser">
           <div class="text-h6">Delete User</div>
           <q-input outlined bottom-slots v-model="text" label="Search Users" counter maxlength="30" :dense="dense">
@@ -151,7 +191,7 @@
       Selected: {{ JSON.stringify(selectedUser) }}
     </div>
     <q-btn  class="q-ml-auto" style="background: #800000; color: white" label="Delete User" type="submit" @click="deleteUser" />
-          <q-btn class="q-ml-auto" style="background: #036d27; color: white" label="Create Account" type="submit" @click="createAccount" />
+          <q-btn class="q-ml-auto" style="background: #547863; color: white" label="Create Bank Account" type="submit" @click="createAccount" />
 
         </q-tab-panel>
 <!-- DEACTIVATE BANK ACCOUNT -->
@@ -265,94 +305,73 @@ export default {
       filteredBankAccountRows,
     };
   },
-  computed: {
-    showUserDashboardButton() {
-      let bankAccountRow = this.bankAccountRows;
-      for (const account in bankAccountRow) {
-        if (account.ownerId === localStorage.getItem('userId')) {
-          return true;
-        }
-      }
-      return false;
-    },
-    methods: {
-      logout() {
-        // Clear session data and route to log in page
-        localStorage.clear();
-        this.$router.push('/login');
-      },
-      goToUserDashBoard() {
-
-        this.$router.push('/userDashboard');
-      },
-      createAccount() {
-        if (this.selectedUser[0] === undefined) {
-          console.log('No user selected');
-          return;
-        }
-        const accountData = {
-          ownerId: this.selectedUser[0].id,
-          statusId: 0,
-          balance: 0,
-          absoluteLimit: 0,
-          //current account is type 1, savings is 0
-          typeId: 1,
-        };
-       api.createAccount(accountData)
+  methods: {
+    createAccount() {
+      const accountData = {
+      ownerId : this.selectedUser[0].id,
+        statusId: 0,
+        balance: 0,
+        absoluteLimit: 0,
+        //type id 1 is current and 0 is savings
+        typeId: 1,
+      };
+      api.createAccount(accountData)
           .then(response => {
-            console.log('Account created successfully:', response.data);
+            console.log('Bank Account created successfully:', response.data);
           })
           .catch(error => {
             // Handle the error
-            console.error('Error creating account:', error);
+            console.error('Error creating bank account:', error);
           });
-      },
-      async getAllUsers() {
-        try {
-          const response = await api.getAllUsers();
-          this.usersRows = response.data;
-        } catch (error) {
-          console.error(error);
-        }
-      },
-      deleteUser() {
-        const user = this.selectedUser[0];
-        api.deleteUserById(user.id)
-            .then(response => {
-              console.log('User deleted successfully:', response.data);
-            })
-            .catch(error => {
-              // Handle the error
-              console.error('Error deleting user:', error);
-            });
-      },
-      disableBankie() {
-        //TODO encrypt IBAN once Catalin has added encryption to backend
-        // 0 = active, 1 = disabled
-        this.selectedBankAccount[0].statusId = 1;
-        console.log(this.selectedBankAccount[0])
-        api.disableBankAccount(this.selectedBankAccount[0].iban, this.selectedBankAccount[0])
-            .then(response => {
-              console.log('Bank account disabled successfully:', response.data);
-            })
-            .catch(error => {
-              // Handle the error
-              console.error('Error disabling bank account:', error);
-            });
-      },
-      saveUser(updatedUser) {
-        api.updateUserById(updatedUser.id, updatedUser)
-            .then(response => {
-              // Handle the response
-              console.log('User updated successfully:', response.data);
-              console.log(updatedUser);
-            })
-            .catch(error => {
-              // Handle the error
-              console.error('Error updating user:', error);
-            });
-      },
     },
+    async getAllUsers() {
+      try {
+        const response = await api.getAllUsers();
+        this.usersRows = response.data;
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    deleteUser() {
+      const user =this.selectedUser[0];
+      api.deleteUserById(user.id)
+          .then(response => {
+            console.log('User deleted successfully:', response.data);
+          })
+          .catch(error => {
+            // Handle the error
+            console.error('Error deleting user:', error);
+          });
+    },
+    disableBankie()
+    {
+      //TODO encrypt IBAN once Catalin has added encryption to backend
+      // 0 = active, 1 = disabled
+     this.selectedBankAccount[0].statusId = 1;
+     console.log(this.selectedBankAccount[0])
+      api.disableBankAccount(this.selectedBankAccount[0].iban, this.selectedBankAccount[0])
+      .then(response => {
+        console.log('Bank account disabled successfully:', response.data);
+      })
+      .catch(error => {
+        // Handle the error
+        console.error('Error disabling bank account:', error);
+      });
+    },
+
+    saveUser(updatedUser) {
+    api.updateUserById(updatedUser.id, updatedUser)
+    .then(response => {
+      // Handle the response
+      console.log('User updated successfully:', response.data);
+      console.log(updatedUser);
+    })
+    .catch(error => {
+      // Handle the error
+      console.error('Error updating user:', error);
+    });
+},
+
   },
 };
 
@@ -363,13 +382,6 @@ export default {
   border: 1px solid #027be3
 </style>
 <style>
-#logoutBtn {
-  border-radius: 20px;
-  padding: 8px 16px;
-  position:absolute;
-  top: 1em;
-  right:1em;
-}
 .editable{
   font-size: 24px;
   font-weight: bold;

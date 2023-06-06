@@ -32,47 +32,31 @@
           <div class="q-pa-md" style="display: grid; float:right; height: 600px; width: 50%;">
             <div class="q-gutter-y-md column" style="max-width: 300px;">
               <q-input filled v-model="price" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask/>
-              <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" />
+              <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" @click="createTransaction" />
             </div>
           </div>
         </q-tab-panel>
-
+<!-- ATM TRANSACTIONS PAGE -->
         <q-tab-panel name="atm_transaction">
           <div class="text-h6">Withdraw/Deposit</div>
-          <div class="q-pa-md" style="display: grid; float:left; height: 600px; width: 50%;">
-            <div class="q-gutter-sm">
+          <div class="q-gutter-sm">
               <q-radio
-                  v-model="shape"
+                  v-model="radio"
                   val="withdraw"
                   label="Withdraw"
               />
               <q-radio
-                  v-model="shape"
+                  v-model="radio"
                   val="deposit"
                   label="Deposit"
               />
+              <div class="q-px-sm">
+              Your selection is: <strong>{{ radio }}</strong>
             </div>
-
-            <div class="q-px-sm">
-              Your selection is: <strong>{{ shape }}</strong>
+              <q-input standout="bg-indigo-11 text-white" v-model="text" label="Custom standout" />
+              <q-input standout="bg-indigo-11 text-white" v-model="text" label="Custom standout" />
+              <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" @click="createTransaction" />
             </div>
-            <div class="q-gutter-y-md column" style="max-width: 300px;">
-              <q-select standout="indigo text-white" v-model="bankAccountFrom" :options="bankAccountFromOption" label="Select Account from" />
-              <q-select standout="indigo text-white" v-model="bankAccountTo" :options="bankAccountToOption" label="Select Account to" />
-
-              <div class="q-pa-md" style="max-width: 300px">
-                <q-input v-model="text" filled autogrow hint="Comment" />
-              </div>
-              <q-btn style="background: #f919a9; color: white" label="Cancel" />
-            </div>
-          </div>
-          <div class="q-pa-md" style="display: grid; float:right; height: 600px; width: 50%;">
-            <div class="q-gutter-y-md column" style="max-width: 300px;">
-              <q-input filled v-model="price" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask?></q-input>
-
-              <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" />
-            </div>
-          </div>
         </q-tab-panel>
       </q-tab-panels>
     </q-card>
@@ -98,16 +82,16 @@
 <script>
 import api from '../../axios.js'
 import { ref, computed } from "vue";
+import jwtDecode from "jwt-decode";
 
 export default {
   name: "TransactionView.vue",
   data() {
     return {
+      user: {},
       bankAccounts: [],
-      currentAccount: {},
-      savingsAccount: {},
-      //The bank itself iban to make transactions for ATM
-      bankjeAccountIban: "NL01INHO0000000001",
+      bankAccountFrom: '',
+      bankAccountTo: '',
       ibanValidationRule: [
         (val) => !!val || "IBAN is required",
         (val) => this.isValidIBAN(val) || "Invalid IBAN",
@@ -115,54 +99,54 @@ export default {
     };
   },
   mounted() {
-    //TODO check with Mark about userId in localstorage
-    api.getBankAccounts(localStorage.getItem('userId'))
-        .then(response => {
-          this.bankAccounts = response.data;
+    const token = localStorage.getItem('token');
+    if (token) {
+      const decodedToken = jwtDecode(token);
+      const email = decodedToken.sub;
 
-          // Categorize bank accounts as current or saving
-          this.bankAccounts.forEach(account => {
-            if (account.type === 'Current') {
-              this.currentAccount.push(account);
-            } else if (account.type === 'Saving') {
-              this.savingsAccount.push(account);
-            }
+      api.getAccountByEmail(email)
+          .then(response => {
+            // Update the user data with the retrieved data
+            this.user = response.data[0];
+
+            const ownerId = this.user.id; // Move the ownerId assignment inside the callback
+
+            api.getBankAccounts(ownerId)
+                .then(response => {
+                  this.bankAccounts = response.data;
+
+                  // Populate bank account options
+                  this.bankAccountFromOption = this.bankAccounts.map(account => ({
+                    label: account.iban,
+                    value: account.type
+                  }));
+                })
+                .catch(error => {
+                  console.error('Error retrieving bank accounts:', error);
+                });
+          })
+          .catch(error => {
+            console.error('Error retrieving user data:', error);
           });
-
-          // Populate bank account options
-          this.bankAccountFromOption = this.bankAccounts.map(account => ({
-            label: account.iban,
-            value: account.type
-          }));
-        })
-        .catch(error => {
-          console.error('Error retrieving user data:', error);
-        });
+    }
   },
-
   setup() {
-    const emailInput = ref('');
-    const passwordInput = ref('');
     const text = ref('');
     const price = ref('');
-    const dense = ref(false);
     const tab = ref('normal_transaction');
-    const shape = ref('withdraw');
-    const bankAccount = ref({});
-    const bankAccountFrom = ref('');
-    const bankAccountTo = ref('');
     const bankAccountFromOption = ref([]);
+    const radio = ref('withdraw');
 
     // Add computed property for filtered bank account options based on the selected bankAccountFrom
     const bankAccountToOption = computed(() => {
-      if (this.bankAccountFrom.value === 'Saving') {
+      if (this.bankAccountFrom === 'Saving') {
         // Filter the bank accounts to only include 'Current' accounts
         return this.bankAccounts
-            .filter(account => account.type === 'Current')
-            .map(account => ({
-              label: account.iban,
-              value: account.type
-            }));
+          .filter(account => account.type === 'Current')
+          .map(account => ({
+            label: account.iban,
+            value: account.type
+          }));
       } else {
         // Return all bank accounts for other types
         return this.bankAccounts.map(account => ({
@@ -172,38 +156,37 @@ export default {
       }
     });
 
-
     return {
-      emailInput,
-      passwordInput,
       text,
       price,
-      dense,
       tab,
-      shape,
-      bankAccount,
-      bankAccountFrom,
-      bankAccountTo,
       bankAccountFromOption,
       bankAccountToOption,
+      radio,
     };
   },
   methods: {
     createTransaction() {
-      const transactionData = {
-        userId: localStorage.getItem('userId'),
-        from: this.bankAccount.from,
-        to: this.bankAccount.to,
-        amount: this.price,
-        text: this.text,
-      };
+        const now = new Date();
+        const options = { hour: '2-digit', minute: '2-digit' };
+        const formattedTime = now.toLocaleTimeString([], options);
+
+        const transactionData = {
+          userPerforming: this.user.id,
+          accountFrom: this.bankAccountFrom.label,
+          accountTo: this.bankAccountTo,
+          amount: this.price,
+          time: formattedTime,
+          comment: this.text,
+        };
+      console.log(transactionData)
       api.performTransaction(transactionData)
-          .then(response => {
-            console.log(response.data);
-          })
-          .catch(error => {
-            console.error('Error creating transaction:', error);
-          });
+        .then(response => {
+          console.log(response.data);
+        })
+        .catch(error => {
+          console.error('Error creating transaction:', error);
+        });
     },
     isValidIBAN(iban) {
       // Regular expression pattern to validate IBAN
@@ -213,6 +196,7 @@ export default {
   },
 };
 </script>
+
 
 
 <style scoped>
@@ -226,7 +210,7 @@ export default {
 <style scoped>
 /* Add the following styles */
 .active-tab {
-  background-color: #ccaeff; /* Replace with your desired background color */
+  background-color: hsl(246, 36%, 57%); /* Replace with your desired background color */
 }
 
 .tab-content {
