@@ -191,6 +191,8 @@
       Selected: {{ JSON.stringify(selectedUser) }}
     </div>
     <q-btn  class="q-ml-auto" style="background: #800000; color: white" label="Delete User" type="submit" @click="deleteUser" />
+          <q-btn class="q-ml-auto" style="background: #547863; color: white" label="Create Bank Account" type="submit" @click="createAccount" />
+
         </q-tab-panel>
 <!-- DEACTIVATE BANK ACCOUNT -->
         <q-tab-panel name="delAccount">
@@ -304,6 +306,24 @@ export default {
     };
   },
   methods: {
+    createAccount() {
+      const accountData = {
+        ownerId: this.selectedUser[0].id,
+        //type 1 = current account, 0 = savings account
+        typeId: 1,
+        statusId: 0,
+        balance: 0,
+        absoluteLimit: 0,
+      };
+      api.createAccount(accountData)
+          .then(response => {
+            console.log('Bank Account created successfully:', response.data);
+          })
+          .catch(error => {
+            // Handle the error
+            console.error('Error creating bank account:', error);
+          });
+    },
     async getAllUsers() {
       try {
         const response = await api.getAllUsers();
