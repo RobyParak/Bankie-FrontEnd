@@ -308,12 +308,12 @@ export default {
   methods: {
     createAccount() {
       const accountData = {
-        ownerId: this.selectedUser[0].id,
-        //type 1 = current account, 0 = savings account
-        typeId: 1,
+      ownerId : this.selectedUser[0].id,
         statusId: 0,
         balance: 0,
         absoluteLimit: 0,
+        //type id 1 is current and 0 is savings
+        typeId: 1,
       };
       api.createAccount(accountData)
           .then(response => {
