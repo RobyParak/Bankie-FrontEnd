@@ -111,17 +111,17 @@
                   {{ props.row.ownerId }}
                 </q-td>
                 <q-td key="statusId" :props="props">
-                  {{ props.row.statusId }}
+                  {{ props.row.statusId === 0 ? 'Active' : 'Inactive' }}
                 </q-td>
                 <q-td key="amount" :props="props">
                   {{ props.row.amount }}
                 </q-td>
                 <q-td key="absoluteLimit" :props="props" class="editable">
-                        €{{ props.row.absoluteLimit }}
-                        <q-popup-edit v-model="props.row.absoluteLimit" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set"/>
-                        </q-popup-edit>
-                    </q-td>
+                  €{{ props.row.absoluteLimit }}
+                  <q-popup-edit v-model="props.row.absoluteLimit" buttons v-slot="scope">
+                    <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
+                  </q-popup-edit>
+                </q-td>
                 <q-td key="typeId" :props="props">
                   {{ props.row.typeId }}
                 </q-td>
