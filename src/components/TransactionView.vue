@@ -37,27 +37,21 @@
           </div>
         </q-tab-panel>
 <!-- ATM TRANSACTIONS PAGE -->
-        <q-tab-panel name="atm_transaction">
-          <div class="text-h6">Withdraw/Deposit</div>
-          <div class="q-gutter-sm">
-              <q-radio
-                  v-model="radio"
-                  val="withdraw"
-                  label="Withdraw"
-              />
-              <q-radio
-                  v-model="radio"
-                  val="deposit"
-                  label="Deposit"
-              />
-              <div class="q-px-sm">
-              Your selection is: <strong>{{ radio }}</strong>
-            </div>
-              <q-input standout="bg-indigo-11 text-white" v-model="text" label="Custom standout" />
-              <q-input standout="bg-indigo-11 text-white" v-model="text" label="Custom standout" />
-              <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" />
-            </div>
-        </q-tab-panel>
+<q-tab-panel name="atm_transaction">
+  <div class="text-h6">Withdraw/Deposit</div>
+  <div class="q-gutter-sm">
+  <q-radio v-model="radio" val="withdraw" label="Withdraw" />
+  <q-radio v-model="radio" val="deposit" label="Deposit" />
+  <div class="q-px-sm">Your selection is: <strong>{{ radio }}</strong></div>
+  <q-input standout="bg-indigo-11 text-white" v-model="toValue" label="To" />
+  <q-input filled standout="bg-indigo-11 text-white" :value="radio === 'deposit' ? bankjeAccountIban : userIban" @input="radio === 'deposit' ? bankjeAccountIban = $event : userIban = $event" label="From" />
+
+  <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" />
+</div>
+
+
+</q-tab-panel>
+
       </q-tab-panels>
     </q-card>
 
@@ -94,6 +88,8 @@ export default {
         (val) => !!val || "IBAN is required",
         (val) => this.isValidIBAN(val) || "Invalid IBAN",
       ],
+      bankjeAccountIban: "NL01INHO0000000001",
+      userIban: "123456789"
     };
   },
   mounted() {
@@ -171,6 +167,7 @@ export default {
     },
   },
 };
+
 </script>
 
 
