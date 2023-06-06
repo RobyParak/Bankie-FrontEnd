@@ -5,15 +5,15 @@ const apiClient = axios.create({
 });
 
 // Add an interceptor to set the token in the request headers
-// apiClient.interceptors.request.use(config => {
-//   const token = localStorage.getItem('token');
-//   if (token) {
-//     config.headers['Authorization'] = `Bearer ${token}`;
-//   }
-//   return config;
-// }, error => {
-//   return Promise.reject(error);
-// });
+apiClient.interceptors.request.use(config => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers['Authorization'] = `Bearer ${token}`;
+  }
+  return config;
+}, error => {
+  return Promise.reject(error);
+});
 
 // Enable CORS headers
 apiClient.interceptors.response.use(response => {
@@ -36,13 +36,20 @@ export default {
   createUser(userData) {
     return apiClient.post('/users', userData);
   },
+  //get transactions by iban
+  getTransactionsByIbanFrom(iban) {
+    return apiClient.get(`/transactions?accountfrom=${iban}`);
+  },
+  getTransactionsByIbanTo(iban) {
+    return apiClient.get(`/transactions?accountto=${iban}`);
+},
     // Get all users
-    getAllUsers(params) {
-      return apiClient.get('/users', { params });
+    getAllUsers() {
+      return apiClient.get('/users');
     },
       //get all bank accounts
   getAllBankAccounts() {
-    return apiClient.get(`/accounts`);
+    return apiClient.get(`/bankaccounts`);
   },
   //get user's accounts
   getBankAccounts(ownerId) {
@@ -82,5 +89,8 @@ export default {
   // Get transaction history
   getTransactionHistory(transactionData) {
     return apiClient.get('/transactions', transactionData);
+  },
+  disableBankAccount(iban, accountData) {
+    return apiClient.put(`/bankaccounts/${iban}`, accountData);
   }
 };
