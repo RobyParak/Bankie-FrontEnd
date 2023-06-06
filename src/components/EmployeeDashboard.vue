@@ -123,7 +123,7 @@
                   </q-popup-edit>
                 </q-td>
                 <q-td key="typeId" :props="props">
-                  {{ props.row.typeId }}
+                  {{ props.row.typeId === 1 ? 'Savings' : 'Current' }}
                 </q-td>
               </q-tr>
             </template>
