@@ -36,43 +36,11 @@
             </div>
           </div>
         </q-tab-panel>
-
+<!-- ATM TRANSACTIONS PAGE -->
         <q-tab-panel name="atm_transaction">
           <div class="text-h6">Withdraw/Deposit</div>
-          <div class="q-pa-md" style="display: grid; float:left; height: 600px; width: 50%;">
-            <div class="q-gutter-sm">
-              <q-radio
-                  v-model="shape"
-                  val="withdraw"
-                  label="Withdraw"
-              />
-              <q-radio
-                  v-model="shape"
-                  val="deposit"
-                  label="Deposit"
-              />
-            </div>
-
-            <div class="q-px-sm">
-              Your selection is: <strong>{{ shape }}</strong>
-            </div>
-            <div class="q-gutter-y-md column" style="max-width: 300px;">
-              <q-select standout="indigo text-white" v-model="bankAccountFrom" :options="bankAccountFromOption" label="Select Account from" />
-              <q-select standout="indigo text-white" v-model="bankAccountTo" :options="bankAccountToOption" label="Select Account to" />
-
-              <div class="q-pa-md" style="max-width: 300px">
-                <q-input v-model="text" filled autogrow hint="Comment" />
-              </div>
-              <q-btn style="background: #f919a9; color: white" label="Cancel" />
-            </div>
-          </div>
-          <div class="q-pa-md" style="display: grid; float:right; height: 600px; width: 50%;">
-            <div class="q-gutter-y-md column" style="max-width: 300px;">
-              <q-input filled v-model="price" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask?></q-input>
-
-              <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" />
-            </div>
-          </div>
+          <div class="q-pa-md" style="display: grid; float:left; height: 600px; width: 50%;"></div>
+            
         </q-tab-panel>
       </q-tab-panels>
     </q-card>
