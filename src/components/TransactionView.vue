@@ -37,21 +37,19 @@
           </div>
         </q-tab-panel>
 <!-- ATM TRANSACTIONS PAGE -->
-<q-tab-panel name="atm_transaction">
-  <div class="text-h6">Withdraw/Deposit</div>
-  <div class="q-gutter-sm">
-  <q-radio v-model="radio" val="withdraw" label="Withdraw" />
-  <q-radio v-model="radio" val="deposit" label="Deposit" />
-  <div class="q-px-sm">Your selection is: <strong>{{ radio }}</strong></div>
-  <q-input standout="bg-indigo-11 text-white" v-model="toValue" label="To" />
-  <q-input filled standout="bg-indigo-11 text-white" :value="radio === 'deposit' ? bankjeAccountIban : userIban" @input="radio === 'deposit' ? bankjeAccountIban = $event : userIban = $event" label="From" />
+        <q-tab-panel name="atm_transaction">
+          <div class="text-h6">Withdraw/Deposit</div>
+          <div class="q-gutter-sm">
+            <q-radio v-model="radio" val="withdraw" label="Withdraw" />
+            <q-radio v-model="radio" val="deposit" label="Deposit" />
+            <div class="q-px-sm">Your selection is: <strong>{{ radio }}</strong></div>
+            <q-input standout="indigo text-white" v-model="bankAccountFrom" label="From" />
+            <q-input v-model="bankAccountTo" :rules="ibanValidationRule" label="To" filled></q-input>
+            <q-input filled v-model="price" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask/>
+            <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" />
+          </div>
 
-  <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" />
-</div>
-
-
-</q-tab-panel>
-
+        </q-tab-panel>
       </q-tab-panels>
     </q-card>
 
@@ -88,8 +86,6 @@ export default {
         (val) => !!val || "IBAN is required",
         (val) => this.isValidIBAN(val) || "Invalid IBAN",
       ],
-      bankjeAccountIban: "NL01INHO0000000001",
-      userIban: "123456789"
     };
   },
   mounted() {
@@ -114,6 +110,7 @@ export default {
     const tab = ref('normal_transaction');
     const bankAccountFromOption = ref([]);
     const radio = ref('withdraw');
+    // const bankjeAccountIban = 'NL01INHO0000000001';
 
     // Add computed property for filtered bank account options based on the selected bankAccountFrom
     const bankAccountToOption = computed(() => {
@@ -167,7 +164,6 @@ export default {
     },
   },
 };
-
 </script>
 
 
