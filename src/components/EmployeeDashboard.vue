@@ -307,6 +307,11 @@ export default {
     };
   },
   methods: {
+    logout() {
+        // Clear session data and route to log in page
+        localStorage.clear();
+        this.$router.push('/login');
+      },
     createAccount() {
       const accountData = {
       ownerId : this.selectedUser[0].id,
