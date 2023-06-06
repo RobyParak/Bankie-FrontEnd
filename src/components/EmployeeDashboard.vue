@@ -328,6 +328,7 @@ export default {
       //TODO encrypt IBAN once Catalin has added encryption to backend
       // 0 = active, 1 = disabled
      this.selectedBankAccount[0].statusId = 1;
+     console.log(this.selectedBankAccount[0])
       api.disableBankAccount(this.selectedBankAccount[0].iban, this.selectedBankAccount[0])
       .then(response => {
         console.log('Bank account disabled successfully:', response.data);

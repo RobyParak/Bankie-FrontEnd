@@ -49,7 +49,7 @@ export default {
     },
       //get all bank accounts
   getAllBankAccounts() {
-    return apiClient.get(`/accounts`);
+    return apiClient.get(`/bankaccounts`);
   },
   //get user's accounts
   getBankAccounts(ownerId) {
