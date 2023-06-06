@@ -1,4 +1,5 @@
 <template>
+  <q-btn class="q-ml-auto" id="logoutBtn" style="background: #f919a9; color: white" label="Logout" @click="logout" />
   <div class="q-pa-md">
     <div class="q-gutter-y-md" style="max-width: 100%">
       <h3>Employee Dashboard</h3>
