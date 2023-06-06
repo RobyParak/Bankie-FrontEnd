@@ -1,6 +1,14 @@
 <template>
   <div class="q-pa-md">
     <div class="q-gutter-y-md" style="max-width: 100%">
+      <q-btn
+          label="< To User Dashboard"
+          id="EditUser"
+          style="background: #f919a9; color: white; float: left; top:1em"
+          @click="goToUserDashboard"
+      />
+      <br>
+      <br>
       <h3>Employee Dashboard</h3>
       <q-option-group
         v-model="panel"
@@ -351,6 +359,9 @@ export default {
       console.error('Error updating user:', error);
     });
 },
+    goToUserDashboard(){
+      this.$router.push('/userDashboard');
+    }
 
   },
 };
