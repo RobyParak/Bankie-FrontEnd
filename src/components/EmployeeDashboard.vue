@@ -388,4 +388,11 @@ export default {
   font-weight: bold;
   color: blue;
 }
+#logoutBtn {
+  border-radius: 20px;
+  padding: 8px 16px;
+  position:absolute;
+  top: 1em;
+  right:1em;
+}
 </style>
