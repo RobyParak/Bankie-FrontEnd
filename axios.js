@@ -53,7 +53,7 @@ export default {
   },
   //get user's accounts
   getBankAccounts(ownerId) {
-    return apiClient.get(`/accounts?ownerId=${ownerId}`);
+    return apiClient.get(`/bankaccounts?ownerId=${ownerId}`);
   },
 
   // Update a user by ID
