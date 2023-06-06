@@ -32,7 +32,7 @@
           <div class="q-pa-md" style="display: grid; float:right; height: 600px; width: 50%;">
             <div class="q-gutter-y-md column" style="max-width: 300px;">
               <q-input filled v-model="price" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask/>
-              <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" on-click="createTransaction" />
+              <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" @click="createTransaction" />
             </div>
           </div>
         </q-tab-panel>
@@ -55,7 +55,7 @@
             </div>
               <q-input standout="bg-indigo-11 text-white" v-model="text" label="Custom standout" />
               <q-input standout="bg-indigo-11 text-white" v-model="text" label="Custom standout" />
-              <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" on-click="createTransaction" />
+              <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" @click="createTransaction" />
             </div>
         </q-tab-panel>
       </q-tab-panels>
@@ -104,29 +104,31 @@ export default {
       const decodedToken = jwtDecode(token);
       const email = decodedToken.sub;
 
-
       api.getAccountByEmail(email)
           .then(response => {
             // Update the user data with the retrieved data
             this.user = response.data[0];
+
+            const ownerId = this.user.id; // Move the ownerId assignment inside the callback
+
+            api.getBankAccounts(ownerId)
+                .then(response => {
+                  this.bankAccounts = response.data;
+
+                  // Populate bank account options
+                  this.bankAccountFromOption = this.bankAccounts.map(account => ({
+                    label: account.iban,
+                    value: account.type
+                  }));
+                })
+                .catch(error => {
+                  console.error('Error retrieving bank accounts:', error);
+                });
           })
           .catch(error => {
             console.error('Error retrieving user data:', error);
           });
     }
-      api.getBankAccounts(this.user.id)
-          .then(response => {
-            this.bankAccounts = response.data;
-
-            // Populate bank account options
-            this.bankAccountFromOption = this.bankAccounts.map(account => ({
-              label: account.iban,
-              value: account.type
-            }));
-          })
-          .catch(error => {
-            console.error('Error retrieving user data:', error);
-          });
   },
   setup() {
     const text = ref('');
@@ -165,14 +167,19 @@ export default {
   },
   methods: {
     createTransaction() {
-      const transactionData = {
-        userPerforming: this.user.id,
-        accountFrom: this.bankAccountFrom,
-        accountTo: this.bankAccountTo,
-        amount: this.price,
-        time: new Date().toISOString(),
-        comment: this.text,
-      };
+        const now = new Date();
+        const options = { hour: '2-digit', minute: '2-digit' };
+        const formattedTime = now.toLocaleTimeString([], options);
+
+        const transactionData = {
+          userPerforming: this.user.id,
+          accountFrom: this.bankAccountFrom.label,
+          accountTo: this.bankAccountTo,
+          amount: this.price,
+          time: formattedTime,
+          comment: this.text,
+        };
+      console.log(transactionData)
       api.performTransaction(transactionData)
         .then(response => {
           console.log(response.data);
