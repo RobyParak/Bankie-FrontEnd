@@ -78,7 +78,7 @@
     <q-page-container>
       <q-splitter v-model="splitterPosition" class="my-splitter">
         <q-page class="q-pa-md" style="padding-left: 5em; padding-top: 0" :style="{ width: '80%' }">
-          <h5 style="text-align: left;">Current Account Balance: {{ balance }}</h5>
+          <h5 style="text-align: left;">Current Account Balance: {{ currentAccount.balance }}</h5>
           <q-table
               class="my-sticky-header-table"
               flat
@@ -89,7 +89,7 @@
               row-key="name"
           />
 
-          <h5 style="text-align: left;">Savings Account Balance: {{ balance }}</h5>
+          <h5 style="text-align: left;">Savings Account Balance: {{ savingsAccount.balance }}</h5>
           <q-table
               class="my-sticky-header-table"
               flat
@@ -125,13 +125,11 @@ export default {
   data() {
     return {
       updateUser: {},
-      balance: 1000.0,
       splitterPosition: 0,
       bankAccounts: [],
       currentAccount: {},
       savingsAccount: {},
       user : {},
-
       currentAccountRows: [],
       savingsAccountRows: [],
       filterInput: '',
@@ -152,15 +150,20 @@ export default {
             api.getBankAccounts(this.user.id)
                 .then(response => {
                   this.bankAccounts = response.data;
+                  console.log(this.bankAccounts);
 
                   // Categorize bank accounts as current or saving
                   this.bankAccounts.forEach(account => {
-                    if (account.type === 'Current') {
-                      this.currentAccount.push(account);
-                    } else if (account.type === 'Saving') {
-                      this.savingsAccount.push(account);
+                    // console.log(account.balance);
+                    if (account.typeId == 1) {
+                      this.currentAccount = account;
+                      
+                    } else if (account.typeId == 0) {
+                      this.savingsAccount = account;
                     }
                   });
+
+
           })
           .catch(error => {
             console.error('Error retrieving user data:', error);
