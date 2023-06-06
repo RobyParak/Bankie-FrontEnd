@@ -32,7 +32,7 @@
           <div class="q-pa-md" style="display: grid; float:right; height: 600px; width: 50%;">
             <div class="q-gutter-y-md column" style="max-width: 300px;">
               <q-input filled v-model="amount" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask/>
-              <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" @click="createTransaction" />
+              <q-btn style="background: #507963; color: white;" label="Transfer" @click="performTransactionWithValidation" :disable="!isFormValid"/>
             </div>
           </div>
         </q-tab-panel>
@@ -56,8 +56,8 @@
             <q-select standout="bg-indigo-11 text-white" v-model="ATMSelection" :options="ATMOptions" label="Select Account" />
             <q-input filled v-model="amount" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask/>
 
-            <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" @click="createTransaction" />
-            </div>
+            <q-btn style="background: #507963; color: white;" label="Transfer" @click="performTransactionWithValidation" :disable="!isFormValid"/>
+          </div>
         </q-tab-panel>
       </q-tab-panels>
     </q-card>
@@ -95,6 +95,7 @@ export default {
       ATMSelection: '',
       bankAccountTo: '',
       ATMIban: "NL01INHO0000000001",
+      isFormValid: false,
       ibanValidationRule: [
         (val) => !!val || "IBAN is required",
         (val) => this.isValidIBAN(val) || "Invalid IBAN",
@@ -155,21 +156,22 @@ export default {
     };
   },
   methods: {
-    createTransaction() {
+    async performTransactionWithValidation() {
       const now = new Date();
-      const options = { hour: '2-digit', minute: '2-digit' };
+      const options = {day: '2-digit', month: '2-digit', year: 'numeric'};
       const formattedTime = now.toLocaleTimeString([], options);
 
       const transactionData = {
         userPerforming: this.user.id,
-        accountFrom: '',
-        accountTo: '',
+        accountFrom: this.bankAccountFrom,
+        accountTo: this.bankAccountTo,
         amount: this.amount,
         time: formattedTime,
         comment: this.text,
       };
 
-    console.log(this.ATMSelection);
+      console.log(this.bankAccountTo);
+      console.log(this.accountTo);
 
       if (this.radio === 'deposit') {
         transactionData.accountFrom = this.ATMIban;
@@ -179,19 +181,73 @@ export default {
         transactionData.accountTo = this.ATMIban;
       }
 
-      api.performTransaction(transactionData)
-          .then(response => {
-            console.log(response.data);
-            console.log('Transaction created successfully');
-          })
-          .catch(error => {
-            console.error('Error creating transaction:', error);
-          });
+      try {
+        // Get accountFrom details by iban
+        api.getBankAccountByIban(transactionData.accountFrom)
+            .then(response => {
+              // Update the user data with the retrieved data
+              this.bankAccountFrom = response.data[0];
+
+              // Get accountTo details by iban
+              api.getBankAccountByIban(transactionData.accountTo)
+                  .then(response => {
+                    // Update the user data with the retrieved data
+                    this.bankAccountTo = response.data[0];
+
+console.log(this.bankAccountTo);
+                    // Perform the validation checks
+                    const isSameOwner = this.bankAccountFrom.ownerId === this.bankAccountTo.ownerId;
+                    const isAccountFromActive = this.bankAccountFrom.statusId !== 1;
+                    const isAccountToActive = this.bankAccountTo.statusId !== 1;
+                    const isSameType = this.bankAccountFrom.typeId === this.bankAccountTo.typeId;
+
+                    // If accounts have the same owner and both are active, or if they have the same type regardless of the owner, proceed with the transaction
+                    if ((isSameOwner && isAccountFromActive && isAccountToActive) || (isSameType && this.bankAccountFrom.typeId === 1 && isAccountFromActive && isAccountToActive)) {
+                      api.performTransaction(transactionData)
+                          .then(response => {
+                            const transactionResult = response.data;
+                            console.log('Transaction performed successfully:', transactionResult);
+                          })
+                          .catch(error => {
+                            console.error('Error performing transaction:', error);
+                          });
+                    } else {
+                      console.log('Account validation failed. Transaction cannot be performed.');
+                    }
+                  })
+                  .catch(error => {
+                    console.error('Error retrieving accountTo data:', error);
+                  });
+            })
+            .catch(error => {
+              console.error('Error retrieving accountFrom data:', error);
+            });
+      } catch (error) {
+        console.error('Error performing transaction:', error);
+      }
     },
     isValidIBAN(iban) {
       // Regular expression pattern to validate IBAN
       const ibanPattern = /^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$/;
       return ibanPattern.test(iban);
+    },
+    validateForm() {
+      // Validate the form fields and set isFormValid accordingly
+      this.isFormValid =
+          !!this.bankAccountFrom &&
+          !!this.bankAccountTo &&
+          !!this.amount;
+    },
+  },
+  watch: {
+    bankAccountFrom() {
+      this.validateForm();
+    },
+    bankAccountTo() {
+      this.validateForm();
+    },
+    amount() {
+      this.validateForm();
     },
   },
 };
@@ -213,7 +269,4 @@ export default {
   background-color: hsl(246, 36%, 57%); /* Replace with your desired background color */
 }
 
-.tab-content {
-  background-color: #ffffff; /* Replace with your desired background color */
-}
 </style>
