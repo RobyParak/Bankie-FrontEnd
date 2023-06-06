@@ -23,15 +23,29 @@
           <div class="q-pa-md" style="display: grid; float:left; height: 600px; width: 50%;">
             <div class="q-gutter-y-md column" style="max-width: 300px;">
               <q-select standout="indigo text-white" v-model="bankAccountFrom" :options="bankAccountFromOption" label="Select Account from" />
-              <q-input v-model="bankAccountTo" :rules="ibanValidationRule" label="To" filled></q-input>
+              <q-input
+                  v-model="bankAccountTo"
+                  :rules="ibanValidationRule"
+                  label="To"
+                  filled
+              ></q-input>
               <div class="q-pa-md" style="max-width: 300px">
                 <q-input v-model="text" filled autogrow hint="Comment" />
               </div>
+              <q-btn style="background: #f919a9; color: white" label="Cancel" />
             </div>
           </div>
           <div class="q-pa-md" style="display: grid; float:right; height: 600px; width: 50%;">
             <div class="q-gutter-y-md column" style="max-width: 300px;">
-              <q-input filled v-model="price" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask/>
+              <q-input
+                  filled
+                  v-model="price"
+                  prefix="€"
+                  label="Amount"
+                  mask="#.##"
+                  fill-mask="0"
+                  input-class="text-right"
+              />
               <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" />
             </div>
           </div>
@@ -68,8 +82,15 @@
           </div>
           <div class="q-pa-md" style="display: grid; float:right; height: 600px; width: 50%;">
             <div class="q-gutter-y-md column" style="max-width: 300px;">
-              <q-input filled v-model="price" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask?></q-input>
-
+              <q-input
+                  filled
+                  v-model="price"
+                  prefix="€"
+                  label="Amount"
+                  mask="#.##"
+                  fill-mask="0"
+                  input-class="text-right"
+              />
               <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" />
             </div>
           </div>
