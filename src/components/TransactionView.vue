@@ -3,13 +3,13 @@
     <h3>Transaction</h3>
     <q-card>
       <q-tabs
-        v-model="tab"
-        dense
-        class="text-grey"
-        active-color="primary"
-        indicator-color="primary"
-        align="justify"
-        narrow-indicator
+          v-model="tab"
+          dense
+          class="text-grey"
+          active-color="primary"
+          indicator-color="primary"
+          align="justify"
+          narrow-indicator
       >
         <q-tab name="normal_transaction" label="Transaction" :class="{ 'active-tab': tab === 'normal_transaction' }" />
         <q-tab name="atm_transaction" label="ATM" :class="{ 'active-tab': tab === 'atm_transaction' }"/>
@@ -22,20 +22,13 @@
           <div class="text-h6">Transaction</div>
           <div class="q-pa-md" style="display: grid; float:left; height: 600px; width: 50%;">
             <div class="q-gutter-y-md column" style="max-width: 300px;">
+              <q-select standout="indigo text-white" v-model="bankAccountFrom" :options="bankAccountFromOption" label="Select Account from" />
               <q-input
-                filled
-                v-model="emailInput"
-                :label="transactionLabels.fromLabel"
-                placeholder=""
-                :dense="dense"
-              />
-              <q-input
-                filled
-                v-model="passwordInput"
-                :label="transactionLabels.toLabel"
-                placeholder=""
-                :dense="dense"
-              />
+                  v-model="bankAccountTo"
+                  :rules="ibanValidationRule"
+                  label="To"
+                  filled
+              ></q-input>
               <div class="q-pa-md" style="max-width: 300px">
                 <q-input v-model="text" filled autogrow hint="Comment" />
               </div>
@@ -45,13 +38,13 @@
           <div class="q-pa-md" style="display: grid; float:right; height: 600px; width: 50%;">
             <div class="q-gutter-y-md column" style="max-width: 300px;">
               <q-input
-                filled
-                v-model="price"
-                prefix="€"
-                label="Amount"
-                mask="#.##"
-                fill-mask="0"
-                input-class="text-right"
+                  filled
+                  v-model="price"
+                  prefix="€"
+                  label="Amount"
+                  mask="#.##"
+                  fill-mask="0"
+                  input-class="text-right"
               />
               <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" />
             </div>
@@ -63,14 +56,14 @@
           <div class="q-pa-md" style="display: grid; float:left; height: 600px; width: 50%;">
             <div class="q-gutter-sm">
               <q-radio
-                v-model="shape"
-                val="withdraw"
-                label="Withdraw"
+                  v-model="shape"
+                  val="withdraw"
+                  label="Withdraw"
               />
               <q-radio
-                v-model="shape"
-                val="deposit"
-                label="Deposit"
+                  v-model="shape"
+                  val="deposit"
+                  label="Deposit"
               />
             </div>
 
@@ -78,19 +71,9 @@
               Your selection is: <strong>{{ shape }}</strong>
             </div>
             <div class="q-gutter-y-md column" style="max-width: 300px;">
-                <q-input
-                    filled
-                    v-model="bankAccount.to"
-                    placeholder="Your current account"
-                    :dense="dense"
-                />
-                <q-input
-                    filled
-                    v-model="bankAccount.from"
-                    :label="transactionLabels.toLabel"
-                    placeholder=""
-                    :dense="dense"
-                />
+              <q-select standout="indigo text-white" v-model="bankAccountFrom" :options="bankAccountFromOption" label="Select Account from" />
+              <q-select standout="indigo text-white" v-model="bankAccountTo" :options="bankAccountToOption" label="Select Account to" />
+
               <div class="q-pa-md" style="max-width: 300px">
                 <q-input v-model="text" filled autogrow hint="Comment" />
               </div>
@@ -100,13 +83,13 @@
           <div class="q-pa-md" style="display: grid; float:right; height: 600px; width: 50%;">
             <div class="q-gutter-y-md column" style="max-width: 300px;">
               <q-input
-                filled
-                v-model="price"
-                prefix="€"
-                label="Amount"
-                mask="#.##"
-                fill-mask="0"
-                input-class="text-right"
+                  filled
+                  v-model="price"
+                  prefix="€"
+                  label="Amount"
+                  mask="#.##"
+                  fill-mask="0"
+                  input-class="text-right"
               />
               <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" />
             </div>
@@ -134,16 +117,24 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue';
 import api from '../../axios.js'
+import { ref, computed } from "vue";
 
 export default {
   name: "TransactionView.vue",
-  bankAccounts: [],
-  currentAccount: {},
-  savingsAccount: {},
-  //The bank itself iban to make transactions for ATM
-  bankjeAccountIban : "NL01INHO0000000001",
+  data() {
+    return {
+      bankAccounts: [],
+      currentAccount: {},
+      savingsAccount: {},
+      //The bank itself iban to make transactions for ATM
+      bankjeAccountIban: "NL01INHO0000000001",
+      ibanValidationRule: [
+        (val) => !!val || "IBAN is required",
+        (val) => this.isValidIBAN(val) || "Invalid IBAN",
+      ],
+    };
+  },
   mounted() {
     //TODO check with Mark about userId in localstorage
     api.getBankAccounts(localStorage.getItem('userId'))
@@ -158,11 +149,18 @@ export default {
               this.savingsAccount.push(account);
             }
           });
+
+          // Populate bank account options
+          this.bankAccountFromOption = this.bankAccounts.map(account => ({
+            label: account.iban,
+            value: account.type
+          }));
         })
         .catch(error => {
           console.error('Error retrieving user data:', error);
         });
   },
+
   setup() {
     const emailInput = ref('');
     const passwordInput = ref('');
@@ -171,43 +169,30 @@ export default {
     const dense = ref(false);
     const tab = ref('normal_transaction');
     const shape = ref('withdraw');
-    const bankAccount = computed(() => {
-      if (shape.value === "withdraw") {
-        return {
-          from: '',
-          to: 'NL01INHO0000000001',
-        };
-      } else if (shape.value === "deposit") {
-        return {
-          to: 'NL01INHO0000000001',
-          from: '',
-        };
-      }
+    const bankAccount = ref({});
+    const bankAccountFrom = ref('');
+    const bankAccountTo = ref('');
+    const bankAccountFromOption = ref([]);
 
-      return {
-        from: "",
-        to: "",
-      };
+    // Add computed property for filtered bank account options based on the selected bankAccountFrom
+    const bankAccountToOption = computed(() => {
+      if (this.bankAccountFrom.value === 'Saving') {
+        // Filter the bank accounts to only include 'Current' accounts
+        return this.bankAccounts
+            .filter(account => account.type === 'Current')
+            .map(account => ({
+              label: account.iban,
+              value: account.type
+            }));
+      } else {
+        // Return all bank accounts for other types
+        return this.bankAccounts.map(account => ({
+          label: account.iban,
+          value: account.type
+        }));
+      }
     });
 
-    const transactionLabels = computed(() => {
-      if (shape.value === "withdraw") {
-        return {
-          fromLabel: "From (Current)",
-          toLabel: "To (Bankje's account)",
-        };
-      } else if (shape.value === "deposit") {
-        return {
-          fromLabel: "From (Bankje's account)",
-          toLabel: "To (Current)",
-        };
-      }
-
-      return {
-        fromLabel: "",
-        toLabel: "",
-      };
-    });
 
     return {
       emailInput,
@@ -218,7 +203,10 @@ export default {
       tab,
       shape,
       bankAccount,
-      transactionLabels,
+      bankAccountFrom,
+      bankAccountTo,
+      bankAccountFromOption,
+      bankAccountToOption,
     };
   },
   methods: {
@@ -238,11 +226,18 @@ export default {
             console.error('Error creating transaction:', error);
           });
     },
+    isValidIBAN(iban) {
+      // Regular expression pattern to validate IBAN
+      const ibanPattern = /^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$/;
+      return ibanPattern.test(iban);
+    },
   },
 };
 </script>
 
+
 <style scoped>
+/* Add your custom styles here */
 </style>
 
 <style lang="sass" scoped>
