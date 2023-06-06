@@ -22,7 +22,7 @@
           <div class="text-h6">Transaction</div>
           <div class="q-pa-md" style="display: grid; float:left; height: 600px; width: 50%;">
             <div class="q-gutter-y-md column" style="max-width: 300px;">
-              <q-select standout="indigo text-white" v-model="bankAccountFrom" :options="bankAccountFromOption" label="Select Account from" />
+              <q-select standout="bg-indigo-11 text-white" v-model="bankAccountFrom" :options="bankAccountFromOption" label="Select Account from" />
               <q-input v-model="bankAccountTo" :rules="ibanValidationRule" label="To" filled></q-input>
               <div class="q-pa-md" style="max-width: 300px">
                 <q-input v-model="text" filled autogrow hint="Comment" />
@@ -53,8 +53,7 @@
               <div class="q-px-sm">
               Your selection is: <strong>{{ radio }}</strong>
             </div>
-              <q-input standout="bg-indigo-11 text-white" v-model="text" label="Custom standout" />
-              <q-input standout="bg-indigo-11 text-white" v-model="text" label="Custom standout" />
+            <q-select standout="bg-indigo-11 text-white" v-model="ATMSelection" :options="ATMOptions" label="Select Account" />
             <q-input filled v-model="amount" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask/>
 
             <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" @click="createTransaction" />
@@ -83,7 +82,7 @@
 
 <script>
 import api from '../../axios.js'
-import { ref, computed } from "vue";
+import { ref, } from "vue";
 import jwtDecode from "jwt-decode";
 
 export default {
@@ -93,7 +92,9 @@ export default {
       user: {},
       bankAccounts: [],
       bankAccountFrom: '',
+      ATMSelection: '',
       bankAccountTo: '',
+      ATMIban: "NL01INHO0000000001",
       ibanValidationRule: [
         (val) => !!val || "IBAN is required",
         (val) => this.isValidIBAN(val) || "Invalid IBAN",
@@ -122,6 +123,10 @@ export default {
                     label: account.iban,
                     value: account.iban
                   }));
+                  this.ATMOptions = this.bankAccounts.map(account => ({
+                    label: account.iban,
+                    value: account.iban
+                  }));
                 })
                 .catch(error => {
                   console.error('Error retrieving bank accounts:', error);
@@ -138,57 +143,50 @@ export default {
     const tab = ref('normal_transaction');
     const bankAccountFromOption = ref([]);
     const radio = ref('withdraw');
-
-    // Add computed property for filtered bank account options based on the selected bankAccountFrom
-    const bankAccountToOption = computed(() => {
-      if (this.bankAccountFrom === 'Saving') {
-        // Filter the bank accounts to only include 'Current' accounts
-        return this.bankAccounts
-          .filter(account => account.type === 'Current')
-          .map(account => ({
-            label: account.iban,
-            value: account.type
-          }));
-      } else {
-        // Return all bank accounts for other types
-        return this.bankAccounts.map(account => ({
-          label: account.iban,
-          value: account.type
-        }));
-      }
-    });
+    const ATMOptions = ref([]);
 
     return {
       text,
       amount,
       tab,
       bankAccountFromOption,
-      bankAccountToOption,
+      ATMOptions,
       radio,
     };
   },
   methods: {
     createTransaction() {
-        const now = new Date();
-        const options = { hour: '2-digit', minute: '2-digit' };
-        const formattedTime = now.toLocaleTimeString([], options);
+      const now = new Date();
+      const options = { hour: '2-digit', minute: '2-digit' };
+      const formattedTime = now.toLocaleTimeString([], options);
 
-        const transactionData = {
-          userPerforming: this.user.id,
-          accountFrom: this.bankAccountFrom.value,
-          accountTo: this.bankAccountTo,
-          amount: this.amount,
-          time: formattedTime,
-          comment: this.text,
-        };
+      const transactionData = {
+        userPerforming: this.user.id,
+        accountFrom: '',
+        accountTo: '',
+        amount: this.amount,
+        time: formattedTime,
+        comment: this.text,
+      };
+
+    console.log(this.ATMSelection);
+
+      if (this.radio === 'deposit') {
+        transactionData.accountFrom = this.ATMIban;
+        transactionData.accountTo = this.ATMSelection.value;
+      } else if (this.radio === 'withdraw') {
+        transactionData.accountFrom = this.ATMSelection.value;
+        transactionData.accountTo = this.ATMIban;
+      }
+
       api.performTransaction(transactionData)
-        .then(response => {
-          console.log(response.data);
-          console.log('Transaction created successfully');
-        })
-        .catch(error => {
-          console.error('Error creating transaction:', error);
-        });
+          .then(response => {
+            console.log(response.data);
+            console.log('Transaction created successfully');
+          })
+          .catch(error => {
+            console.error('Error creating transaction:', error);
+          });
     },
     isValidIBAN(iban) {
       // Regular expression pattern to validate IBAN
