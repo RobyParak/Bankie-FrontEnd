@@ -62,7 +62,7 @@
       </q-tab-panels>
     </q-card>
 
-    <q-banner class="bg-primary text-white">
+    <!-- <q-banner class="bg-primary text-white">
       Unfortunately, the credit card did not go through, please try again.
       <template v-slot:action>
         <q-btn flat color="white" label="Dismiss" />
@@ -76,7 +76,7 @@
         <q-btn flat color="#507963" label="Yes" />
         <q-btn flat color="red" label="No" />
       </template>
-    </q-banner>
+    </q-banner> -->
   </div>
 </template>
 
