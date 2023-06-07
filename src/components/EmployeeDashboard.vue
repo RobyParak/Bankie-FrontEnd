@@ -16,7 +16,7 @@
         inline
         :options="[
           { label: 'Edit User/Bank information', value: 'edit' },
-          { label: 'Delete User', value: 'delUser' },
+          { label: 'Select User', value: 'delUser' },
           { label: 'Deactivate Bank Account', value: 'delAccount' }
         ]"
       />
@@ -153,9 +153,6 @@
       selection="single"
       v-model:selected="selectedUser"
     />
-    <div class="q-mt-md">
-      Selected: {{ JSON.stringify(selectedUser) }}
-    </div>
     <q-btn  class="q-ml-auto" style="background: #800000; color: white" label="Delete User" type="submit" @click="deleteUser" />
           <q-btn class="q-ml-auto" style="background: #547863; color: white" label="Create Bank Account" type="submit" @click="createAccount" />
 
@@ -176,9 +173,6 @@
       selection="single"
       v-model:selected="selectedBankAccount"
     />
-    <div class="q-mt-md">
-      Selected: {{ JSON.stringify(selectedBankAccount) }}
-    </div>
     <q-btn  class="q-ml-auto" style="background: #800000; color: white" label="Deactivate Bank Account" type="submit" @click="disableBankie" />
         </q-tab-panel>
 
@@ -307,6 +301,7 @@ export default {
       const user =this.selectedUser[0];
       api.deleteUserById(user.id)
           .then(response => {
+            this.getAllUsers();
             console.log('User deleted successfully:', response.data);
           })
           .catch(error => {
