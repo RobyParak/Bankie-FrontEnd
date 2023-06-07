@@ -85,11 +85,11 @@
               <q-icon name="search" />
             </template>
           </q-input>
-          <q-table class="my-sticky-header-table" flat bordered title="Current Account" :rows="currentAccountRows" :columns="columns" row-key="name"
+          <q-table class="my-sticky-header-table" flat bordered title="Current Account" :rows="filteredCurrentRows" :columns="columns" row-key="name"
           />
 
           <h5 style="text-align: left;">Savings Account Balance: {{ savingsAccount.balance }}</h5>
-          <q-table class="my-sticky-header-table" flat bordered title="Savings Account" :rows="savingsAccountRows" :columns="columns" row-key="name"
+          <q-table class="my-sticky-header-table" flat bordered title="Savings Account" :rows="filteredSavingsRows" :columns="columns" row-key="name"
           />
         </q-page>
         <q-page class="q-pa-md" style="alignment: center; padding-right: 3em;" :style="{ width: '20%' }">
@@ -103,7 +103,7 @@
 <script>
 import api from '../../axios.js'
 import jwtDecode from 'jwt-decode';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 
 export default {
   name: 'UserDashboard',
@@ -143,10 +143,6 @@ export default {
                   this.savingsAccount = account;
                 }
               });
-
-              // Call getAllTransactions after assigning account values
-              this.getAllTransactions(this.currentAccount.iban, true);
-              this.getAllTransactions(this.savingsAccount.iban, false);
             })
             .catch(error => {
               console.error('Error retrieving bank accounts:', error);
@@ -158,6 +154,33 @@ export default {
     } else {
       this.$router.push('/login');
     }
+  },
+  setup() {
+    const transactionSearchText = ref('');
+    const filteredCurrentRows = computed(() => {
+      return currentAccountRows.value.filter(
+        (row) =>
+          row.time.includes(transactionSearchText.value) ||
+          row.accountFrom.includes(transactionSearchText.value) ||
+          row.accountTo.includes(transactionSearchText.value) ||
+          row.comment.includes(transactionSearchText.value)
+      );
+    });
+    const filteredSavingsRows = computed(() => {
+      return savingsAccountRows.value.filter(
+        (row) =>
+          row.time.includes(transactionSearchText.value) ||
+          row.accountFrom.includes(transactionSearchText.value) ||
+          row.accountTo.includes(transactionSearchText.value) ||
+          row.comment.includes(transactionSearchText.value)
+      );
+    });
+
+    return {
+      transactionSearchText,
+      filteredCurrentRows,
+      filteredSavingsRows
+    };
   },
   methods: {
     async getAllTransactions(iban, isCurrent) {
@@ -207,7 +230,6 @@ export default {
       this.searchSavingsRows();
     },
   },
-
   computed: {
     columns() {
       return [
@@ -229,31 +251,6 @@ export default {
       ];
     },
   },
-  searchCurrentRows() {
-      return computed(() => {
-        const searchText = this.transactionSearchText.toLowerCase();
-
-        return this.currentAccountRows.filter(row =>
-          row.time.includes(searchText) ||
-          row.accountTo.toLowerCase().includes(searchText) ||
-          row.accountFrom.toLowerCase().includes(searchText) ||
-          row.comment.toLowerCase().includes(searchText)
-        );
-      }).value;
-    },
-
-    searchSavingsRows() {
-      return computed(() => {
-        const searchText = this.transactionSearchText.toLowerCase();
-
-        return this.savingsAccountRows.filter(row =>
-          row.time.includes(searchText) ||
-          row.accountTo.toLowerCase().includes(searchText) ||
-          row.accountFrom.toLowerCase().includes(searchText) ||
-          row.comment.toLowerCase().includes(searchText)
-        );
-      }).value;
-    },
 };
 
 </script>
