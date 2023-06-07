@@ -22,7 +22,7 @@
           <div class="text-h6">Transaction</div>
           <div class="q-pa-md" style="display: grid; float:left; height: 600px; width: 50%;">
             <div class="q-gutter-y-md column" style="max-width: 300px;">
-              <q-select standout="indigo text-white" v-model="bankAccountFrom" :options="bankAccountFromOption" label="Select Account from" />
+              <q-select standout="bg-indigo-11 text-white" v-model="bankAccountFrom" :options="bankAccountFromOption" label="Select Account from" />
               <q-input v-model="bankAccountTo" :rules="ibanValidationRule" label="To" filled></q-input>
               <div class="q-pa-md" style="max-width: 300px">
                 <q-input v-model="text" filled autogrow hint="Comment" />
@@ -31,8 +31,8 @@
           </div>
           <div class="q-pa-md" style="display: grid; float:right; height: 600px; width: 50%;">
             <div class="q-gutter-y-md column" style="max-width: 300px;">
-              <q-input filled v-model="price" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask/>
-              <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" @click="createTransaction" />
+              <q-input filled v-model="amount" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask/>
+              <q-btn style="background: #507963; color: white;" label="Transfer" @click="performTransactionWithValidation" :disable="!isFormValid"/>
             </div>
           </div>
         </q-tab-panel>
@@ -53,10 +53,11 @@
               <div class="q-px-sm">
               Your selection is: <strong>{{ radio }}</strong>
             </div>
-              <q-input standout="bg-indigo-11 text-white" v-model="text" label="Custom standout" />
-              <q-input standout="bg-indigo-11 text-white" v-model="text" label="Custom standout" />
-              <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" @click="createTransaction" />
-            </div>
+            <q-select standout="bg-indigo-11 text-white" v-model="ATMSelection" :options="ATMOptions" label="Select Account" />
+            <q-input filled v-model="amount" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask/>
+
+            <q-btn style="background: #507963; color: white;" label="Transfer" @click="performTransactionWithValidation" :disable="!isFormValid"/>
+          </div>
         </q-tab-panel>
       </q-tab-panels>
     </q-card>
@@ -81,7 +82,7 @@
 
 <script>
 import api from '../../axios.js'
-import { ref, computed } from "vue";
+import { ref, } from "vue";
 import jwtDecode from "jwt-decode";
 
 export default {
@@ -91,7 +92,10 @@ export default {
       user: {},
       bankAccounts: [],
       bankAccountFrom: '',
+      ATMSelection: '',
       bankAccountTo: '',
+      ATMIban: "NL01INHO0000000001",
+      isFormValid: false,
       ibanValidationRule: [
         (val) => !!val || "IBAN is required",
         (val) => this.isValidIBAN(val) || "Invalid IBAN",
@@ -118,7 +122,11 @@ export default {
                   // Populate bank account options
                   this.bankAccountFromOption = this.bankAccounts.map(account => ({
                     label: account.iban,
-                    value: account.type
+                    value: account.iban
+                  }));
+                  this.ATMOptions = this.bankAccounts.map(account => ({
+                    label: account.iban,
+                    value: account.iban
                   }));
                 })
                 .catch(error => {
@@ -132,66 +140,114 @@ export default {
   },
   setup() {
     const text = ref('');
-    const price = ref('');
+    const amount = ref('');
     const tab = ref('normal_transaction');
     const bankAccountFromOption = ref([]);
     const radio = ref('withdraw');
-
-    // Add computed property for filtered bank account options based on the selected bankAccountFrom
-    const bankAccountToOption = computed(() => {
-      if (this.bankAccountFrom === 'Saving') {
-        // Filter the bank accounts to only include 'Current' accounts
-        return this.bankAccounts
-          .filter(account => account.type === 'Current')
-          .map(account => ({
-            label: account.iban,
-            value: account.type
-          }));
-      } else {
-        // Return all bank accounts for other types
-        return this.bankAccounts.map(account => ({
-          label: account.iban,
-          value: account.type
-        }));
-      }
-    });
+    const ATMOptions = ref([]);
 
     return {
       text,
-      price,
+      amount,
       tab,
       bankAccountFromOption,
-      bankAccountToOption,
+      ATMOptions,
       radio,
     };
   },
   methods: {
-    createTransaction() {
-        const now = new Date();
-        const options = { hour: '2-digit', minute: '2-digit' };
-        const formattedTime = now.toLocaleTimeString([], options);
+    async performTransactionWithValidation() {
+      const now = new Date();
+      const options = {day: '2-digit', month: '2-digit', year: 'numeric'};
+      const formattedTime = now.toLocaleTimeString([], options);
 
-        const transactionData = {
-          userPerforming: this.user.id,
-          accountFrom: this.bankAccountFrom.label,
-          accountTo: this.bankAccountTo,
-          amount: this.price,
-          time: formattedTime,
-          comment: this.text,
-        };
-      console.log(transactionData)
-      api.performTransaction(transactionData)
-        .then(response => {
-          console.log(response.data);
-        })
-        .catch(error => {
-          console.error('Error creating transaction:', error);
-        });
+      const transactionData = {
+        userPerforming: this.user.id,
+        accountFrom: this.bankAccountFrom,
+        accountTo: this.bankAccountTo,
+        amount: this.amount,
+        time: formattedTime,
+        comment: this.text,
+      };
+
+      console.log(this.bankAccountTo);
+      console.log(this.accountTo);
+
+      if (this.radio === 'deposit') {
+        transactionData.accountFrom = this.ATMIban;
+        transactionData.accountTo = this.ATMSelection.value;
+      } else if (this.radio === 'withdraw') {
+        transactionData.accountFrom = this.ATMSelection.value;
+        transactionData.accountTo = this.ATMIban;
+      }
+
+      try {
+        // Get accountFrom details by iban
+        api.getBankAccountByIban(transactionData.accountFrom)
+            .then(response => {
+              // Update the user data with the retrieved data
+              this.bankAccountFrom = response.data[0];
+
+              // Get accountTo details by iban
+              api.getBankAccountByIban(transactionData.accountTo)
+                  .then(response => {
+                    // Update the user data with the retrieved data
+                    this.bankAccountTo = response.data[0];
+
+console.log(this.bankAccountTo);
+                    // Perform the validation checks
+                    const isSameOwner = this.bankAccountFrom.ownerId === this.bankAccountTo.ownerId;
+                    const isAccountFromActive = this.bankAccountFrom.statusId !== 1;
+                    const isAccountToActive = this.bankAccountTo.statusId !== 1;
+                    const isSameType = this.bankAccountFrom.typeId === this.bankAccountTo.typeId;
+
+                    // If accounts have the same owner and both are active, or if they have the same type regardless of the owner, proceed with the transaction
+                    if ((isSameOwner && isAccountFromActive && isAccountToActive) || (isSameType && this.bankAccountFrom.typeId === 1 && isAccountFromActive && isAccountToActive)) {
+                      api.performTransaction(transactionData)
+                          .then(response => {
+                            const transactionResult = response.data;
+                            console.log('Transaction performed successfully:', transactionResult);
+                          })
+                          .catch(error => {
+                            console.error('Error performing transaction:', error);
+                          });
+                    } else {
+                      console.log('Account validation failed. Transaction cannot be performed.');
+                    }
+                  })
+                  .catch(error => {
+                    console.error('Error retrieving accountTo data:', error);
+                  });
+            })
+            .catch(error => {
+              console.error('Error retrieving accountFrom data:', error);
+            });
+      } catch (error) {
+        console.error('Error performing transaction:', error);
+      }
     },
     isValidIBAN(iban) {
       // Regular expression pattern to validate IBAN
       const ibanPattern = /^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$/;
       return ibanPattern.test(iban);
+    },
+    validateForm() {
+      // Validate the form fields and set isFormValid accordingly
+      this.isFormValid =
+          !!this.bankAccountFrom &&
+          !!this.bankAccountTo &&
+          !!this.amount;
+    },
+  },
+  watch: {
+    bankAccountFrom() {
+      this.validateForm();
+    },
+    bankAccountTo() {
+      this.validateForm();
+    },
+    amount() {
+      this.validateForm();
     },
   },
 };
@@ -213,7 +269,4 @@ export default {
   background-color: hsl(246, 36%, 57%); /* Replace with your desired background color */
 }
 
-.tab-content {
-  background-color: #ffffff; /* Replace with your desired background color */
-}
 </style>

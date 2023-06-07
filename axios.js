@@ -55,7 +55,9 @@ export default {
   getBankAccounts(ownerId) {
     return apiClient.get(`/bankaccounts?ownerId=${ownerId}`);
   },
-
+  getBankAccountByIban(iban) {
+    return apiClient.get(`/bankaccounts?iban=${iban}`);
+  },
   // Update a user by ID
   updateUserById(userId, userData) {
     return apiClient.put(`/users/${userId}`, userData);
