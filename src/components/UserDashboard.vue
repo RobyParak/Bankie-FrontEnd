@@ -78,36 +78,16 @@
     <q-page-container>
       <q-splitter v-model="splitterPosition" class="my-splitter">
         <q-page class="q-pa-md" style="padding-left: 5em; padding-top: 0" :style="{ width: '80%' }">
-          <h5 style="text-align: left;">Current Account Balance: {{ balance }}</h5>
-          <q-table
-              class="my-sticky-header-table"
-              flat
-              bordered
-              title="Current Account"
-              :rows="currentAccountRows"
-              :columns="columns"
-              row-key="name"
+          <h5 style="text-align: left;">Current Account Balance: {{ currentAccount.balance }}</h5>
+          <q-table class="my-sticky-header-table" flat bordered title="Current Account" :rows="currentAccountRows" :columns="columns" row-key="name"
           />
 
-          <h5 style="text-align: left;">Savings Account Balance: {{ balance }}</h5>
-          <q-table
-              class="my-sticky-header-table"
-              flat
-              bordered
-              title="Savings Account"
-              :rows="savingsAccountRows"
-              :columns="columns"
-              row-key="name"
+          <h5 style="text-align: left;">Savings Account Balance: {{ savingsAccount.balance }}</h5>
+          <q-table class="my-sticky-header-table" flat bordered title="Savings Account" :rows="savingsAccountRows" :columns="columns" row-key="name"
           />
         </q-page>
         <q-page class="q-pa-md" style="alignment: center; padding-right: 3em;" :style="{ width: '20%' }">
-          <q-input
-              filled
-              v-model="filterInput"
-              label="Search"
-              placeholder="Type to search transaction"
-              :dense="dense"
-              style="padding: 1em; width: 300px"
+          <q-input filled v-model="filterInput" label="Search" placeholder="Type to search transaction" :dense="dense" style="padding: 1em; width: 300px"
           />
           <q-btn class="q-ml-auto" id="transactionButton" label="Make a new transaction" to="/transaction" />
         </q-page>
@@ -125,13 +105,11 @@ export default {
   data() {
     return {
       updateUser: {},
-      balance: 1000.0,
       splitterPosition: 0,
       bankAccounts: [],
       currentAccount: {},
       savingsAccount: {},
       user : {},
-
       currentAccountRows: [],
       savingsAccountRows: [],
       filterInput: '',
@@ -143,7 +121,8 @@ export default {
     if (token) {
       const decodedToken = jwtDecode(token);
       const email = decodedToken.sub;
-
+      this.getAllTransactions(this.currentAccount.iban, true);
+      this.getAllTransactions(this.savingsAccount.iban, false);
 
       api.getAccountByEmail(email)
           .then(response => {
@@ -152,22 +131,24 @@ export default {
             api.getBankAccounts(this.user.id)
                 .then(response => {
                   this.bankAccounts = response.data;
+                  console.log(this.bankAccounts);
 
                   // Categorize bank accounts as current or saving
                   this.bankAccounts.forEach(account => {
-                    if (account.type === 'Current') {
-                      this.currentAccount.push(account);
-                    } else if (account.type === 'Saving') {
-                      this.savingsAccount.push(account);
+                    // console.log(account.balance);
+                    if (account.typeId == 1) {
+                      this.currentAccount = account;
+                      
+                    } else if (account.typeId == 0) {
+                      this.savingsAccount = account;
                     }
                   });
+
+
           })
           .catch(error => {
             console.error('Error retrieving user data:', error);
           });
-
-
- this.fetchTransactions(this.currentAccount.iban);
 //TODO worry about the savings account
           })
           .catch(error => {
@@ -179,27 +160,24 @@ export default {
       }
   },
   methods: {
-    fetchTransactions(iban) {
-      // Fetch transactions for the specified iban and current page
-      const transactionData = {
-        iban: iban,
-        page: this.currentPage,
-        pageSize: this.pageSize,
-      };
-      api.getTransactionHistory(transactionData)
-          .then(response => {
-            // Update the transactions data with the retrieved data
-            this.transactions = response.data.items;
-            this.totalTransactions = response.data.total;
-          })
-          .catch(error => {
-            console.error('Error retrieving transactions:', error);
-          });
+    // SHOULD STILL FILTER - IF THE FROM OR TO ACCOUNT = IBAN, THEN ADD TO ROWS.
+    async getAllTransactions(iban, isCurrent) {
+      try {
+        const response = await api.getTransactionHistory(iban);
+        console.log(response);
+        if(isCurrent){
+            this.currentAccountRows = response.data;
+        }else{
+            this.savingsAccountRows = response.data;
+        }
+      } catch (error) {
+        console.error(error);
+      }
     },
     changePage(page) {
       // Update the current page and fetch transactions for the new page
       this.currentPage = page;
-      this.fetchTransactions(this.currentAccountRows[0].iban);
+      //this.fetchTransactions(this.currentAccountRows[0].iban);
     },
     logout() {
       // Clear session data and route to log in page
@@ -227,9 +205,9 @@ export default {
   computed: {
     columns() {
       return [
-        { name: 'date', required: true, label: 'Date', align: 'left', field: 'date', sortable: true },
-        { name: 'from', required: true, label: 'From', align: 'left', field: 'from', sortable: true },
-        { name: 'to', required: true, label: 'To', align: 'left', field: 'to', sortable: true },
+        { name: 'time', required: true, label: 'Date', align: 'left', field: 'time', sortable: true },
+        { name: 'accountFrom', required: true, label: 'From', align: 'left', field: 'accountFrom', sortable: true },
+        { name: 'accountTo', required: true, label: 'To', align: 'left', field: 'accountTo', sortable: true },
         { name: 'amount', required: true, label: 'Amount', align: 'right', field: 'amount', sortable: true },
       ];
     },
