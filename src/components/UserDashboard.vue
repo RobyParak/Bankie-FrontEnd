@@ -166,9 +166,9 @@ export default {
         const response = await api.getTransactionHistory(iban);
         console.log(response);
         if(isCurrent){
-          this.currentAccountRows = response.data;
+            this.currentAccountRows = response.data;
         }else{
-          this.savingsAccountRows = response.data;
+            this.savingsAccountRows = response.data;
         }
       } catch (error) {
         console.error(error);
