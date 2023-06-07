@@ -183,6 +183,7 @@ export default {
       api.performTransaction(transactionData)
         .then(response => {
           console.log(response.data);
+          this.$router.push('/SuccessfulTransaction');
         })
         .catch(error => {
           console.error('Error creating transaction:', error);
