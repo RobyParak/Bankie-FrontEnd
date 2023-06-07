@@ -208,7 +208,25 @@ export default {
         { name: 'time', required: true, label: 'Date', align: 'left', field: 'time', sortable: true },
         { name: 'accountFrom', required: true, label: 'From', align: 'left', field: 'accountFrom', sortable: true },
         { name: 'accountTo', required: true, label: 'To', align: 'left', field: 'accountTo', sortable: true },
-        { name: 'amount', required: true, label: 'Amount', align: 'right', field: 'amount', sortable: true },
+        {
+        name: 'amount',
+        required: true,
+        label: 'Amount',
+        align: 'right',
+        field: 'amount',
+        sortable: true,
+        format: (val) => {
+          // Format the amount as currency with 2 decimal places and a euro sign
+          const formattedAmount = new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'EUR',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          }).format(val);
+
+          return formattedAmount;
+        },
+      }
       ];
     },
   },
