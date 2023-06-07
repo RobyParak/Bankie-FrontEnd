@@ -85,11 +85,11 @@
               <q-icon name="search" />
             </template>
           </q-input>
-          <q-table class="my-sticky-header-table" flat bordered title="Current Account" :rows="filteredCurrentRows" :columns="columns" row-key="name"
+          <q-table class="my-sticky-header-table" flat bordered title="Current Account" :rows="currentAccountRows" :columns="columns" row-key="name"
           />
 
           <h5 style="text-align: left;">Savings Account Balance: {{ savingsAccount.balance }}</h5>
-          <q-table class="my-sticky-header-table" flat bordered title="Savings Account" :rows="filteredSavingsRows" :columns="columns" row-key="name"
+          <q-table class="my-sticky-header-table" flat bordered title="Savings Account" :rows="savingsAccountRows" :columns="columns" row-key="name"
           />
         </q-page>
         <q-page class="q-pa-md" style="alignment: center; padding-right: 3em;" :style="{ width: '20%' }">
@@ -103,7 +103,7 @@
 <script>
 import api from '../../axios.js'
 import jwtDecode from 'jwt-decode';
-import { computed, ref } from 'vue';
+// import { computed, ref } from 'vue';
 
 export default {
   name: 'UserDashboard',
@@ -156,31 +156,31 @@ export default {
     }
   },
   setup() {
-    const transactionSearchText = ref('');
-    const filteredCurrentRows = computed(() => {
-      return currentAccountRows.value.filter(
-        (row) =>
-          row.time.includes(transactionSearchText.value) ||
-          row.accountFrom.includes(transactionSearchText.value) ||
-          row.accountTo.includes(transactionSearchText.value) ||
-          row.comment.includes(transactionSearchText.value)
-      );
-    });
-    const filteredSavingsRows = computed(() => {
-      return savingsAccountRows.value.filter(
-        (row) =>
-          row.time.includes(transactionSearchText.value) ||
-          row.accountFrom.includes(transactionSearchText.value) ||
-          row.accountTo.includes(transactionSearchText.value) ||
-          row.comment.includes(transactionSearchText.value)
-      );
-    });
+    // const transactionSearchText = ref('');
+    // const filteredCurrentRows = computed(() => {
+    //   return currentAccountRows.value.filter(
+    //     (row) =>
+    //       row.time.includes(transactionSearchText.value) ||
+    //       row.accountFrom.includes(transactionSearchText.value) ||
+    //       row.accountTo.includes(transactionSearchText.value) ||
+    //       row.comment.includes(transactionSearchText.value)
+    //   );
+    // });
+    // const filteredSavingsRows = computed(() => {
+    //   return savingsAccountRows.value.filter(
+    //     (row) =>
+    //       row.time.includes(transactionSearchText.value) ||
+    //       row.accountFrom.includes(transactionSearchText.value) ||
+    //       row.accountTo.includes(transactionSearchText.value) ||
+    //       row.comment.includes(transactionSearchText.value)
+    //   );
+    // });
 
-    return {
-      transactionSearchText,
-      filteredCurrentRows,
-      filteredSavingsRows
-    };
+    // return {
+    //   transactionSearchText,
+    //   filteredCurrentRows,
+    //   filteredSavingsRows
+    // };
   },
   methods: {
     async getAllTransactions(iban, isCurrent) {
