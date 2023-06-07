@@ -62,21 +62,6 @@
       </q-tab-panels>
     </q-card>
 
-    <!-- <q-banner class="bg-primary text-white">
-      Unfortunately, the credit card did not go through, please try again.
-      <template v-slot:action>
-        <q-btn flat color="white" label="Dismiss" />
-        <q-btn flat color="white" label="Update Credit Card" />
-      </template>
-    </q-banner>
-
-    <q-banner class="bg-primary text-white">
-      Are you sure you want to make this transaction?
-      <template v-slot:action>
-        <q-btn flat color="#507963" label="Yes" />
-        <q-btn flat color="red" label="No" />
-      </template>
-    </q-banner> -->
   </div>
 </template>
 
@@ -127,7 +112,7 @@ export default {
                     value: account.iban
                   }));
                   this.ATMOptions = this.bankAccounts.map(account => ({
-                    label: account.iban,
+                    label: account.iban + " - " + account.type + "€",
                     value: account.iban
                   }));
                 })
@@ -188,6 +173,7 @@ export default {
           .then(response => {
             const transactionResult = response.data;
             console.log('Transaction performed successfully:', transactionResult);
+            this.$router.push('/SuccessfulTransaction');
           })
           .catch(error => {
             console.error('Error performing transaction:', error);
@@ -216,7 +202,7 @@ export default {
             .then(response => {
               // Update the user data with the retrieved data
               this.bankAccountFrom = response.data[0];
-
+              this.$router.push('/SuccessfulTransaction');
               // Get accountTo details by iban
               api.getBankAccountByIban(this.bankAccountTo)
                   .then(response => {
