@@ -79,6 +79,12 @@
       <q-splitter v-model="splitterPosition" class="my-splitter">
         <q-page class="q-pa-md" style="padding-left: 5em; padding-top: 0" :style="{ width: '80%' }">
           <h5 style="text-align: left;">Current Account Balance: {{ currentAccount.balance }}</h5>
+          <q-input filled v-model="transactionSearchText" label="Search" placeholder="Type to search transaction" :dense="dense" style="padding: 1em; width: 300px">
+            <template v-slot:append>
+              <q-icon v-if="transactionSearchText !== ''" name="close" @click="transactionSearchText = ''" class="cursor-pointer" />
+              <q-icon name="search" />
+            </template>
+          </q-input>
           <q-table class="my-sticky-header-table" flat bordered title="Current Account" :rows="currentAccountRows" :columns="columns" row-key="name"
           />
 
@@ -87,8 +93,6 @@
           />
         </q-page>
         <q-page class="q-pa-md" style="alignment: center; padding-right: 3em;" :style="{ width: '20%' }">
-          <q-input filled v-model="filterInput" label="Search" placeholder="Type to search transaction" :dense="dense" style="padding: 1em; width: 300px"
-          />
           <q-btn class="q-ml-auto" id="transactionButton" label="Make a new transaction" to="/transaction" />
         </q-page>
       </q-splitter>
@@ -99,6 +103,7 @@
 <script>
 import api from '../../axios.js'
 import jwtDecode from 'jwt-decode';
+import { computed } from 'vue';
 
 export default {
   name: 'UserDashboard',
@@ -112,55 +117,49 @@ export default {
       user : {},
       currentAccountRows: [],
       savingsAccountRows: [],
-      filterInput: '',
       showUserForm: false,
     };
   },
-  mounted() {
+    mounted() {
     const token = localStorage.getItem('token');
     if (token) {
       const decodedToken = jwtDecode(token);
       const email = decodedToken.sub;
-      this.getAllTransactions(this.currentAccount.iban, true);
-      this.getAllTransactions(this.savingsAccount.iban, false);
 
       api.getAccountByEmail(email)
-          .then(response => {
-            // Update the user data with the retrieved data
-            this.user = response.data[0];
-            api.getBankAccounts(this.user.id)
-                .then(response => {
-                  this.bankAccounts = response.data;
-                  console.log(this.bankAccounts);
+        .then(response => {
+          // Update the user data with the retrieved data
+          this.user = response.data[0];
+          api.getBankAccounts(this.user.id)
+            .then(response => {
+              this.bankAccounts = response.data;
+              console.log(this.bankAccounts);
 
-                  // Categorize bank accounts as current or saving
-                  this.bankAccounts.forEach(account => {
-                    // console.log(account.balance);
-                    if (account.typeId == 1) {
-                      this.currentAccount = account;
-                      
-                    } else if (account.typeId == 0) {
-                      this.savingsAccount = account;
-                    }
-                  });
+              // Categorize bank accounts as current or saving
+              this.bankAccounts.forEach(account => {
+                if (account.typeId == 1) {
+                  this.currentAccount = account;
+                } else if (account.typeId == 0) {
+                  this.savingsAccount = account;
+                }
+              });
 
-
-          })
-          .catch(error => {
-            console.error('Error retrieving user data:', error);
-          });
-//TODO worry about the savings account
-          })
-          .catch(error => {
-            console.error('Error retrieving bank accounts:', error);
-          });
+              // Call getAllTransactions after assigning account values
+              this.getAllTransactions(this.currentAccount.iban, true);
+              this.getAllTransactions(this.savingsAccount.iban, false);
+            })
+            .catch(error => {
+              console.error('Error retrieving bank accounts:', error);
+            });
+        })
+        .catch(error => {
+          console.error('Error retrieving user data:', error);
+        });
+    } else {
+      this.$router.push('/login');
     }
-      else {
-        this.$router.push('/login');
-      }
   },
   methods: {
-    // SHOULD STILL FILTER - IF THE FROM OR TO ACCOUNT = IBAN, THEN ADD TO ROWS.
     async getAllTransactions(iban, isCurrent) {
       try {
         const response = await api.getTransactionHistory(iban);
@@ -170,6 +169,7 @@ export default {
         }else{
             this.savingsAccountRows = response.data;
         }
+
       } catch (error) {
         console.error(error);
       }
@@ -177,7 +177,6 @@ export default {
     changePage(page) {
       // Update the current page and fetch transactions for the new page
       this.currentPage = page;
-      //this.fetchTransactions(this.currentAccountRows[0].iban);
     },
     logout() {
       // Clear session data and route to log in page
@@ -202,20 +201,20 @@ export default {
           });
     },
   },
+  watch: {
+    transactionSearchText() {
+      this.searchCurrentRows();
+      this.searchSavingsRows();
+    },
+  },
+
   computed: {
     columns() {
       return [
         { name: 'time', required: true, label: 'Date', align: 'left', field: 'time', sortable: true },
         { name: 'accountFrom', required: true, label: 'From', align: 'left', field: 'accountFrom', sortable: true },
         { name: 'accountTo', required: true, label: 'To', align: 'left', field: 'accountTo', sortable: true },
-        {
-        name: 'amount',
-        required: true,
-        label: 'Amount',
-        align: 'right',
-        field: 'amount',
-        sortable: true,
-        format: (val) => {
+        { name: 'amount', required: true, label: 'Amount', align: 'right', field: 'amount', sortable: true, format: (val) => {
           // Format the amount as currency with 2 decimal places and a euro sign
           const formattedAmount = new Intl.NumberFormat('en-US', {
             style: 'currency',
@@ -230,6 +229,31 @@ export default {
       ];
     },
   },
+  searchCurrentRows() {
+      return computed(() => {
+        const searchText = this.transactionSearchText.toLowerCase();
+
+        return this.currentAccountRows.filter(row =>
+          row.time.includes(searchText) ||
+          row.accountTo.toLowerCase().includes(searchText) ||
+          row.accountFrom.toLowerCase().includes(searchText) ||
+          row.comment.toLowerCase().includes(searchText)
+        );
+      }).value;
+    },
+
+    searchSavingsRows() {
+      return computed(() => {
+        const searchText = this.transactionSearchText.toLowerCase();
+
+        return this.savingsAccountRows.filter(row =>
+          row.time.includes(searchText) ||
+          row.accountTo.toLowerCase().includes(searchText) ||
+          row.accountFrom.toLowerCase().includes(searchText) ||
+          row.comment.toLowerCase().includes(searchText)
+        );
+      }).value;
+    },
 };
 
 </script>
