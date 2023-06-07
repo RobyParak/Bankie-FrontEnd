@@ -54,9 +54,9 @@
               Your selection is: <strong>{{ radio }}</strong>
             </div>
             <q-select standout="bg-indigo-11 text-white" v-model="ATMSelection" :options="ATMOptions" label="Select Account" />
-            <q-input filled v-model="amount" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask/>
+            <q-input filled v-model="amountATM" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask/>
 
-            <q-btn style="background: #507963; color: white;" label="Transfer" @click="performTransactionWithValidation" :disable="!isFormValid"/>
+            <q-btn style="background: #507963; color: white;" label="Transfer" @click="atmTransaction" :disable="!isFormValidATM"/>
           </div>
         </q-tab-panel>
       </q-tab-panels>
@@ -85,6 +85,7 @@ import api from '../../axios.js'
 import { ref, } from "vue";
 import jwtDecode from "jwt-decode";
 
+
 export default {
   name: "TransactionView.vue",
   data() {
@@ -96,6 +97,7 @@ export default {
       bankAccountTo: '',
       ATMIban: "NL01INHO0000000001",
       isFormValid: false,
+      isFormValidATM: false,
       ibanValidationRule: [
         (val) => !!val || "IBAN is required",
         (val) => this.isValidIBAN(val) || "Invalid IBAN",
@@ -141,6 +143,7 @@ export default {
   setup() {
     const text = ref('');
     const amount = ref('');
+    const amountATM = ref('');
     const tab = ref('normal_transaction');
     const bankAccountFromOption = ref([]);
     const radio = ref('withdraw');
@@ -153,25 +156,25 @@ export default {
       bankAccountFromOption,
       ATMOptions,
       radio,
+      amountATM,
     };
   },
   methods: {
-    async performTransactionWithValidation() {
+    atmTransaction() {
       const now = new Date();
-      const options = {day: '2-digit', month: '2-digit', year: 'numeric'};
+     // const options = {day: '2-digit', month: '2-digit', year: 'numeric'};
+      //TODO change back to the top option once back end supports it
+      const options = {hour: '2-digit', minute: '2-digit'};
       const formattedTime = now.toLocaleTimeString([], options);
 
       const transactionData = {
         userPerforming: this.user.id,
-        accountFrom: this.bankAccountFrom,
-        accountTo: this.bankAccountTo,
-        amount: this.amount,
+        amount: this.amountATM,
+        accountTo: "",
+        accountFrom: "",
         time: formattedTime,
-        comment: this.text,
+        comment: "ATM Transaction",
       };
-
-      console.log(this.bankAccountTo);
-      console.log(this.accountTo);
 
       if (this.radio === 'deposit') {
         transactionData.accountFrom = this.ATMIban;
@@ -181,6 +184,32 @@ export default {
         transactionData.accountTo = this.ATMIban;
       }
 
+      api.performTransaction(transactionData)
+          .then(response => {
+            const transactionResult = response.data;
+            console.log('Transaction performed successfully:', transactionResult);
+          })
+          .catch(error => {
+            console.error('Error performing transaction:', error);
+          });
+    },
+    async performTransactionWithValidation() {
+      const now = new Date();
+      // const options = {day: '2-digit', month: '2-digit', year: 'numeric'};
+      //TODO change back to the top option once back end supports it
+      const options = {hour: '2-digit', minute: '2-digit'};
+      const formattedTime = now.toLocaleTimeString([], options);
+
+      const transactionData = {
+        userPerforming: this.user.id,
+        accountFrom: this.bankAccountFrom.value,
+        accountTo: "",
+        amount: this.amount,
+        time: formattedTime,
+        comment: this.text,
+      };
+      transactionData.accountTo = this.bankAccountTo;
+
       try {
         // Get accountFrom details by iban
         api.getBankAccountByIban(transactionData.accountFrom)
@@ -189,12 +218,11 @@ export default {
               this.bankAccountFrom = response.data[0];
 
               // Get accountTo details by iban
-              api.getBankAccountByIban(transactionData.accountTo)
+              api.getBankAccountByIban(this.bankAccountTo)
                   .then(response => {
                     // Update the user data with the retrieved data
                     this.bankAccountTo = response.data[0];
 
-console.log(this.bankAccountTo);
                     // Perform the validation checks
                     const isSameOwner = this.bankAccountFrom.ownerId === this.bankAccountTo.ownerId;
                     const isAccountFromActive = this.bankAccountFrom.statusId !== 1;
@@ -238,6 +266,12 @@ console.log(this.bankAccountTo);
           !!this.bankAccountTo &&
           !!this.amount;
     },
+    validateFormATM(){
+      this.isFormValidATM =
+          !!this.ATMSelection &&
+          !!this.ATMIban &&
+          !!this.amountATM;
+    },
   },
   watch: {
     bankAccountFrom() {
@@ -248,6 +282,9 @@ console.log(this.bankAccountTo);
     },
     amount() {
       this.validateForm();
+    },
+    amountATM() {
+      this.validateFormATM();
     },
   },
 };
