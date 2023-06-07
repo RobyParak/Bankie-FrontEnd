@@ -18,7 +18,7 @@ apiClient.interceptors.request.use(config => {
 // Enable CORS headers
 apiClient.interceptors.response.use(response => {
   // Add CORS headers to the response
-  response.headers['Access-Control-Allow-Origin'] = 'http://localhost:8080';
+  response.headers['Access-Control-Allow-Origin'] = '*';
   response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE';
   response.headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization';
 
