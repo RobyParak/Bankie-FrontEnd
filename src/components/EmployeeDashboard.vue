@@ -3,7 +3,7 @@
   <div class="q-pa-md">
     <div class="q-gutter-y-md" style="max-width: 100%">
       <q-btn
-          label="< To User Dashboard"
+          label="To User Dashboard"
           id="EditUser"
           style="background: #f919a9; color: white; float: left; top:1em"
           @click="goToUserDashboard"
@@ -246,7 +246,6 @@ export default {
   );
 });
 
-
     onMounted(() => {
       getAllUsers();
       getAllBankAccounts();
@@ -285,6 +284,16 @@ export default {
       api.createAccount(accountData)
           .then(response => {
             console.log('Bank Account created successfully:', response.data);
+            this.selectedUser[0].role = 'Customer';
+            api.updateUserById(this.selectedUser[0].id, this.selectedUser[0])
+                .then(response => {
+                  console.log('User updated successfully:', response.data);
+                  this.getAllUsers();
+                })
+                .catch(error => {
+                  // Handle the error
+                  console.error('Error updating user:', error);
+                });
           })
           .catch(error => {
             // Handle the error
