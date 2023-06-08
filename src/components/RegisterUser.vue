@@ -103,8 +103,19 @@ export default {
           this.$router.push('/success') // Redirect the user to the success page
         })
         .catch(error => {
-          console.log(error);
-          this.errorMessage = error.response.data.message;
+          // Check if the error is due to duplicate email address
+          if (
+            error.response &&
+            error.response.status === 400 &&
+            error.response.data.message === 'Email address already exists'
+          ) {
+            // Handle the duplicate email error
+            this.errorMessage = 'Email address already exists. Please choose a different email.'
+          } else {
+            // Handle other errors
+            console.error(error)
+            this.errorMessage = 'An error occurred. Please try again.'
+          }
         })
     },
   },

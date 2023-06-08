@@ -5,7 +5,6 @@ import TransactionView from '@/components/TransactionView.vue';
 import RegisterUser from "@/components/RegisterUser";
 import EmployeeDashboard from "@/components/EmployeeDashboard";
 import SuccessfulRegistration from "@/components/SuccessfulRegistration";
-import SuccessfulTransactionVue from './components/SuccessfulTransaction.vue';
 
 
 const routes = [
@@ -42,11 +41,6 @@ const routes = [
         path: '/success',
         name: 'SuccessfulRegistration',
         component: SuccessfulRegistration
-    },
-    {
-        path: '/SuccessfulTransaction',
-        name: 'SuccessfulTransaction',
-        component: SuccessfulTransactionVue
     }
 ];
 

@@ -107,7 +107,6 @@ import { computed, ref, onMounted, reactive } from 'vue';
 
 export default {
   name: 'UserDashboard',
-
   setup() {
     const updateUser = reactive({});
     const splitterPosition = ref(0);
@@ -139,115 +138,6 @@ export default {
   { field: 'accountTo', label: 'Account To' },
   { field: 'accountFrom', label: 'Account From' },
   {
-=======
-  data() {
-    return {
-      updateUser: {},
-      splitterPosition: 0,
-      bankAccounts: [],
-      currentAccount: {},
-      savingsAccount: {},
-      user : {},
-      currentAccountRows: [],
-      savingsAccountRows: [],
-      filterInput: '',
-      showUserForm: false,
-    };
-  },
-  mounted() {
-    const token = localStorage.getItem('token');
-    if (token) {
-      const decodedToken = jwtDecode(token);
-      const email = decodedToken.sub;
-      this.getAllTransactions(this.currentAccount.iban, true);
-      this.getAllTransactions(this.savingsAccount.iban, false);
-
-      api.getUserByEmail(email)
-          .then(response => {
-            // Update the user data with the retrieved data
-            this.user = response.data[0];
-            api.getBankAccounts(this.user.id)
-                .then(response => {
-                  this.bankAccounts = response.data;
-                  console.log(this.bankAccounts);
-
-                  // Categorize bank accounts as current or saving
-                  this.bankAccounts.forEach(account => {
-                    // console.log(account.balance);
-                    if (account.typeId == 1) {
-                      this.currentAccount = account;
-                      
-                    } else if (account.typeId == 0) {
-                      this.savingsAccount = account;
-                    }
-                  });
-
-
-          })
-          .catch(error => {
-            console.error('Error retrieving user data:', error);
-          });
-//TODO worry about the savings account
-          })
-          .catch(error => {
-            console.error('Error retrieving bank accounts:', error);
-          });
-    }
-      else {
-        this.$router.push('/login');
-      }
-  },
-  methods: {
-    // SHOULD STILL FILTER - IF THE FROM OR TO ACCOUNT = IBAN, THEN ADD TO ROWS.
-    async getAllTransactions(iban, isCurrent) {
-      try {
-        const response = await api.getTransactionHistory(iban);
-        console.log(response);
-        if(isCurrent){
-            this.currentAccountRows = response.data;
-        }else{
-            this.savingsAccountRows = response.data;
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    },
-    changePage(page) {
-      // Update the current page and fetch transactions for the new page
-      this.currentPage = page;
-      //this.fetchTransactions(this.currentAccountRows[0].iban);
-    },
-    logout() {
-      // Clear session data and route to log in page
-      localStorage.clear();
-      this.$router.push('/login');
-    },
-    toggleUserForm() {
-      this.showUserForm = !this.showUserForm;
-    },
-    saveUser() {
-      this.updatedUser = { ...this.user }; // Store the updated user data
-
-      // Perform the PUT request to the API with the updatedUser data
-      api.updateUserById(this.user.id, this.updatedUser)
-          .then(response => {
-            // Handle the response
-            console.log('User updated successfully:', response.data);
-          })
-          .catch(error => {
-            // Handle the error
-            console.error('Error updating user:', error);
-          });
-    },
-  },
-  computed: {
-    columns() {
-      return [
-        { name: 'time', required: true, label: 'Date', align: 'left', field: 'time', sortable: true },
-        { name: 'accountFrom', required: true, label: 'From', align: 'left', field: 'accountFrom', sortable: true },
-        { name: 'accountTo', required: true, label: 'To', align: 'left', field: 'accountTo', sortable: true },
-        {
-
         name: 'amount',
         required: true,
         label: 'Amount',
