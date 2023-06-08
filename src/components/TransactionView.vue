@@ -171,11 +171,9 @@ export default {
         transactionData.accountFrom = this.ATMSelection.value;
         transactionData.accountTo = this.ATMIban;
       }
+      const isNotBelowAbsoluteLimit = (parseFloat(this.bankAccountFrom.balance) - parseFloat(this.amount)) >= this.bankAccountFrom.absoluteLimit;
 
-      const isBelowAbsoluteLimit = (parseFloat(this.bankAccountFrom.balance) - parseFloat(this.amount)) >= this.bankAccountFrom.absoluteLimit;
-      console.log('isBelowAbsoluteLimit', isBelowAbsoluteLimit);
-
-      if (!isBelowAbsoluteLimit) {
+      if (isNotBelowAbsoluteLimit) {
   api.performTransaction(transactionData)
       .then(response => {
         const transactionResult = response.data;
@@ -239,17 +237,18 @@ export default {
                     const isAccountFromActive = this.bankAccountFrom.statusId !== 1;
                     const isAccountToActive = this.bankAccountTo.statusId !== 1;
                     const isSameType = this.bankAccountFrom.typeId === this.bankAccountTo.typeId;
-                    const isBelowAbsoluteLimit = (parseFloat(this.bankAccountFrom.balance) - parseFloat(this.amount)) >= this.bankAccountFrom.absoluteLimit;
+                    const isNotBelowAbsoluteLimit = (parseFloat(this.bankAccountFrom.balance) - parseFloat(this.amount)) >= this.bankAccountFrom.absoluteLimit;
 
                     if (
                         (isSameOwner && isAccountFromActive && isAccountToActive) ||
                         (isSameType && this.bankAccountFrom.typeId === 1 && isAccountFromActive && isAccountToActive) &&
-                        !(isBelowAbsoluteLimit)
+                        (isNotBelowAbsoluteLimit)
                     ) {
                       api.performTransaction(transactionData)
                           .then(response => {
                             const transactionResult = response.data;
                             console.log('Transaction performed successfully:', transactionResult);
+                            this.$router.push('/SuccessfulTransaction');
                           })
                           .catch(error => {
                             console.error('Error performing transaction:', error);
@@ -268,7 +267,6 @@ export default {
       } catch (error) {
         console.error('Error performing transaction:', error);
       }
-      this.$router.push('/SuccessfulTransaction');
     },
     isValidIBAN(iban) {
       // Regular expression pattern to validate IBAN
