@@ -16,8 +16,7 @@
         inline
         :options="[
           { label: 'Edit User/Bank information', value: 'edit' },
-          { label: 'New Bank Account', value: 'newBankAccount' },
-          { label: 'Delete User', value: 'delUser' },
+          { label: 'Select User', value: 'delUser' },
           { label: 'Deactivate Bank Account', value: 'delAccount' }
         ]"
       />
@@ -138,49 +137,7 @@
             </template>
           </q-table>
         </q-tab-panel>
-    <!-- ADD A BANK ACCOUNT -->
 
-        <q-tab-panel name="newBankAccount">
-          <div class="text-h6">Add new Bank Account</div>
-          <div class="q-pa-md" style="justify-content: center; padding-left: 3em; max-width: 80%;">
-      <q-form @submit="onSubmit" @reset="onReset" class="q-gutter-md">
-        <q-select filled v-model="model" :options="options" label="User Account" />
-        <q-input
-        filled
-        v-model="price"
-        prefix="€"
-        label="Amount"
-        mask="#.##"
-        fill-mask="0"
-        input-class="text-right"
-      />
-      <q-input
-            filled
-            v-model="absoluteLimit"
-            label="Absolute Limit"
-            placeholder="€1000"
-        />
-        <q-btn-toggle
-        v-model="model"
-        class="my-custom-toggle"
-        no-caps
-        rounded
-        unelevated
-        toggle-color="indigo-11"
-        color="white"
-        text-color="black"
-        :options="[
-          {label: 'Current Account', value: 'one'},
-          {label: 'Savings Account', value: 'two'}
-        ]"
-      />
-        <div>
-          <q-btn  class="q-ml-auto" style="background: #f919a9; color: white" label="Add New Bank Account" type="submit" />
-        </div>
-      </q-form>
-    </div>
-    <!-- DELETE USER -->
-        </q-tab-panel>
         <q-tab-panel name="delUser">
           <div class="text-h6">Delete User</div>
           <q-input outlined bottom-slots v-model="text" label="Search Users" counter maxlength="30" :dense="dense">
@@ -196,9 +153,6 @@
       selection="single"
       v-model:selected="selectedUser"
     />
-    <div class="q-mt-md">
-      Selected: {{ JSON.stringify(selectedUser) }}
-    </div>
     <q-btn  class="q-ml-auto" style="background: #800000; color: white" label="Delete User" type="submit" @click="deleteUser" />
           <q-btn class="q-ml-auto" style="background: #547863; color: white" label="Create Bank Account" type="submit" @click="createAccount" />
 
@@ -219,9 +173,6 @@
       selection="single"
       v-model:selected="selectedBankAccount"
     />
-    <div class="q-mt-md">
-      Selected: {{ JSON.stringify(selectedBankAccount) }}
-    </div>
     <q-btn  class="q-ml-auto" style="background: #800000; color: white" label="Deactivate Bank Account" type="submit" @click="disableBankie" />
         </q-tab-panel>
 
@@ -350,6 +301,7 @@ export default {
       const user =this.selectedUser[0];
       api.deleteUserById(user.id)
           .then(response => {
+            this.getAllUsers();
             console.log('User deleted successfully:', response.data);
           })
           .catch(error => {

@@ -55,32 +55,25 @@ export default {
   getBankAccounts(ownerId) {
     return apiClient.get(`/bankaccounts?ownerId=${ownerId}`);
   },
-
+  getBankAccountByIban(iban) {
+    return apiClient.get(`/bankaccounts?iban=${iban}`);
+  },
   // Update a user by ID
   updateUserById(userId, userData) {
     return apiClient.put(`/users/${userId}`, userData);
   },
-
   // Delete a user by ID
   deleteUserById(userId) {
     return apiClient.delete(`/users/${userId}`);
   },
-
-    // Get all bankaccounts
-    getAllAccounts(params) {
-      return apiClient.get('/bankaccounts', { params });
-    },
-
   // Create an account
   createAccount(accountData) {
     return apiClient.post('/bankaccounts', accountData);
   },
-
   // Get account details
-  getAccountByEmail(email) {
+  getUserByEmail(email) {
     return apiClient.get(`/users?email=${email}`);
   },
-
   // Perform a transaction
   performTransaction(transactionData) {
     return apiClient.post('/transactions', transactionData);
