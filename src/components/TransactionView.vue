@@ -17,7 +17,7 @@
 
       <q-separator />
 
-      <q-tab-panels v-model="tab" animated>
+      <q-tab-panels v-model="tab" animated class="Transaction">
         <q-tab-panel name="normal_transaction">
           <div class="text-h6">Transaction</div>
           <div class="q-pa-md" style="display: grid; float:left; height: 600px; width: 50%;">
@@ -33,6 +33,18 @@
             <div class="q-gutter-y-md column" style="max-width: 300px;">
               <q-input filled v-model="amount" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask/>
               <q-btn style="background: #507963; color: white;" label="Transfer" @click="performTransactionWithValidation" :disable="!isFormValid"/>
+              <div class="searchByName">
+              <q-input outlined bottom-slots v-model="searchByName" label="Search IBAN by Name" counter maxlength="30" :dense="dense">
+                <template v-slot:append>
+                <q-icon name="search" />
+              </template>
+            </q-input>
+            <q-field outlined label="IBAN" stack-label>
+              <template v-slot:control>
+                <div class="self-center full-width no-outline" tabindex="0">IBAN</div>
+              </template>
+            </q-field>
+          </div>
             </div>
           </div>
         </q-tab-panel>
@@ -147,6 +159,7 @@ export default {
       amountATM,
     };
   },
+  
   methods: {
     atmTransaction() {
       const now = new Date();
@@ -303,6 +316,14 @@ export default {
 /* Add the following styles */
 .active-tab {
   background-color: hsl(246, 36%, 57%); /* Replace with your desired background color */
+}
+.searchByNameContainer{
+  width: 50%;
+  float: right;
+}
+.searchByName{
+  position: relative;
+  top: 60px;
 }
 
 </style>

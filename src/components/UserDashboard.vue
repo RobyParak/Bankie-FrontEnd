@@ -126,7 +126,7 @@ export default {
       const decodedToken = jwtDecode(token);
       const email = decodedToken.sub;
 
-      api.getAccountByEmail(email)
+      api.getUserByEmail(email)
         .then(response => {
           // Update the user data with the retrieved data
           this.user = response.data[0];
@@ -236,6 +236,7 @@ export default {
         { name: 'time', required: true, label: 'Date', align: 'left', field: 'time', sortable: true },
         { name: 'accountFrom', required: true, label: 'From', align: 'left', field: 'accountFrom', sortable: true },
         { name: 'accountTo', required: true, label: 'To', align: 'left', field: 'accountTo', sortable: true },
+        { name: 'comment', label: 'Comment', align: 'left', field: 'comment', sortable: true },
         { name: 'amount', required: true, label: 'Amount', align: 'right', field: 'amount', sortable: true, format: (val) => {
           // Format the amount as currency with 2 decimal places and a euro sign
           const formattedAmount = new Intl.NumberFormat('en-US', {
