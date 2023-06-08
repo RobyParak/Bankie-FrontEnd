@@ -31,6 +31,7 @@
             </template>
           </q-input>
           <!-- User table -->
+          <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
           <q-table
             style="height: 400px"
             flat bordered
@@ -49,38 +50,38 @@
               <q-tr>
                 <q-td key="firstName" :props="props" class="editable">
                   {{ props.row.firstName }}
-                  <q-popup-edit v-model="props.row.firstName" buttons @save="saveUser(props.row)" v-slot="scope">
-                    <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set(); saveUser(props.row)"/>
+                  <q-popup-edit v-model="props.row.firstName" v-slot="scope">
+                    <q-input v-model="scope.value" dense autofocus counter @keyup.enter="saveAndSetUser(scope, props.row)"/>
                   </q-popup-edit>
                 </q-td>
                     <q-td key="lastName" :props="props" class="editable">
                         {{ props.row.lastName }}
-                        <q-popup-edit v-model="props.row.lastName" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set(); saveUser(props.row)"/>
+                        <q-popup-edit v-model="props.row.lastName" v-slot="scope">
+                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="saveAndSetUser(scope, props.row)"/>
                         </q-popup-edit>
                     </q-td>
                     <q-td key="phoneNumber" :props="props" class="editable">
                         {{ props.row.phoneNumber }}
-                        <q-popup-edit v-model="props.row.phoneNumber" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set(); saveUser(props.row)"/>
+                        <q-popup-edit v-model="props.row.phoneNumber" v-slot="scope">
+                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="saveAndSetUser(scope, props.row)"/>
                         </q-popup-edit>
                     </q-td>
                     <q-td key="Email" :props="props" class="editable">
                         {{ props.row.email }}
-                        <q-popup-edit v-model="props.row.email" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set(); saveUser(props.row)"/>
+                        <q-popup-edit v-model="props.row.email" v-slot="scope">
+                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="saveAndSetUser(scope, props.row)"/>
                         </q-popup-edit>
                     </q-td>
                     <q-td key="dailyLimit" :props="props" class="editable">
                         €{{ props.row.dailyLimit }}
-                        <q-popup-edit v-model="props.row.dailyLimit" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set(); saveUser(props.row)"/>
+                        <q-popup-edit v-model="props.row.dailyLimit" v-slot="scope">
+                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="saveAndSetUser(scope, props.row)"/>
                         </q-popup-edit>
                     </q-td>
                     <q-td key="transactionLimit" :props="props" class="editable">
                         €{{ props.row.transactionLimit }}
-                        <q-popup-edit v-model="props.row.transactionLimit" buttons v-slot="scope">
-                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set(); saveUser(props.row)"/>
+                        <q-popup-edit v-model="props.row.transactionLimit" v-slot="scope">
+                        <q-input v-model="scope.value" dense autofocus counter @keyup.enter="saveAndSetUser(scope, props.row)"/>
                         </q-popup-edit>
                     </q-td>
                     <q-td key="role" :props="props">
@@ -126,8 +127,8 @@
                 </q-td>
                 <q-td key="absoluteLimit" :props="props" class="editable">
                   €{{ props.row.absoluteLimit }}
-                  <q-popup-edit v-model="props.row.absoluteLimit" buttons v-slot="scope">
-                    <q-input v-model="scope.value" dense autofocus counter @keyup.enter="scope.set" />
+                  <q-popup-edit v-model="props.row.absoluteLimit" v-slot="scope">
+                    <q-input v-model="scope.value" dense autofocus counter @keyup.enter="saveAndSetAbsoluteLimit(scope, props.row)"/>
                   </q-popup-edit>
                 </q-td>
                 <q-td key="typeId" :props="props">
@@ -187,7 +188,7 @@ import { ref, onMounted, computed } from 'vue';
 
 export default {
   setup() {
-    
+    const errorMessage = ref('');
     const bankAccountColumns = [
       { name: 'iban', align: 'left', label: 'IBAN', field: 'iban' },
       { name: 'ownerId', label: 'Owner ID', field: 'ownerId' },
@@ -263,6 +264,7 @@ export default {
       bankAccountSearchText,
       filteredUsersRows,
       filteredBankAccountRows,
+      errorMessage,
     };
   },
   methods: {
@@ -315,7 +317,7 @@ export default {
       // 0 = active, 1 = disabled
      this.selectedBankAccount[0].statusId = 1;
      console.log(this.selectedBankAccount[0])
-      api.disableBankAccount(this.selectedBankAccount[0].iban, this.selectedBankAccount[0])
+      api.updateBankAccountByIban(this.selectedBankAccount[0].iban, this.selectedBankAccount[0])
       .then(response => {
         console.log('Bank account disabled successfully:', response.data);
       })
@@ -324,19 +326,62 @@ export default {
         console.error('Error disabling bank account:', error);
       });
     },
-
-    saveUser(updatedUser) {
-    api.updateUserById(updatedUser.id, updatedUser)
+    saveAndSetUser(scope, row) {
+      scope.set(); // Set the updated value before saving
+      this.saveUser(row);
+    },
+    saveUser(row) {
+      // Check nothing is NUll because we don't like the void
+      if (!row.firstName || !row.lastName || !row.phoneNumber || !row.email || !row.dailyLimit || !row.transactionLimit) {
+        this.errorMessage = 'Please fill in all required fields.';
+        return;
+      }
+     else if (row.firstName.length < 2 || row.lastName.length < 2) {
+        this.errorMessage = 'Name must be at least 2 characters long.';
+        return;
+      }
+      // Validate email using a regular expression
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(row.email)) {
+        this.errorMessage = 'Invalid email address. Please enter a valid email.';
+        return;
+      }
+      // Validate phone number as numeric
+      if (isNaN(row.phoneNumber)) {
+        this.errorMessage = 'Phone number should be numeric.';
+        return;
+      }
+      // Validate limits as numeric
+      if (isNaN(row.dailyLimit) || isNaN(row.transactionLimit)) {
+        this.errorMessage = 'Limits should be numeric.';
+        return;
+      }
+    api.updateUserById(row.id, row)
     .then(response => {
       // Handle the response
       console.log('User updated successfully:', response.data);
-      console.log(updatedUser);
+      console.log(row);
     })
     .catch(error => {
       // Handle the error
       console.error('Error updating user:', error);
     });
 },
+    saveAndSetAbsoluteLimit(scope, row) {
+      scope.set();
+      if (isNaN(row.absoluteLimit)) {
+        this.errorMessage = 'Absolute limit should be numeric.';
+        return;
+      }
+      api.updateBankAccountByIban(row.iban, row)
+          .then(response => {
+            console.log('Bank account updated successfully:', response.data);
+          })
+          .catch(error => {
+            // Handle the error
+            console.error('Error updating bank account:', error);
+          });
+    },
     goToUserDashboard(){
       this.$router.push('/userDashboard');
     }

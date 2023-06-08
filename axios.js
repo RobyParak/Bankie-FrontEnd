@@ -83,7 +83,7 @@ export default {
   getTransactionHistory(transactionData) {
     return apiClient.get('/transactions', transactionData);
   },
-  disableBankAccount(iban, accountData) {
+  updateBankAccountByIban(iban, accountData) {
     return apiClient.put(`/bankaccounts/${iban}`, accountData);
   }
 };
