@@ -171,24 +171,35 @@ export default {
         transactionData.accountFrom = this.ATMSelection.value;
         transactionData.accountTo = this.ATMIban;
       }
+      const isNotBelowAbsoluteLimit = (parseFloat(this.bankAccountFrom.balance) - parseFloat(this.amount)) >= this.bankAccountFrom.absoluteLimit;
 
-      api.performTransaction(transactionData)
-          .then(response => {
-            const transactionResult = response.data;
-            console.log('Transaction performed successfully:', transactionResult);
-            this.$router.push('/SuccessfulTransaction');
-          })
-          .catch(error => {
-            console.error('Error performing transaction:', error);
-          });
+      if (isNotBelowAbsoluteLimit) {
+  api.performTransaction(transactionData)
+      .then(response => {
+        const transactionResult = response.data;
+        console.log('Transaction performed successfully:', transactionResult);
+        this.$router.push('/SuccessfulTransaction');
+      })
+      .catch(error => {
+        console.error('Error performing transaction:', error);
+      });
+    }
     },
     populateBankAccountOptions() {
+      const formatter = new Intl.NumberFormat('en-GB', {
+        style: 'currency',
+        currency: 'EUR',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+
       this.bankAccountFromOption = this.bankAccounts.map(account => ({
-        label: `${account.typeId === 1 ? 'Current' : 'Savings'} - ${account.iban} ${account.balance}€`,
+        label: `${account.typeId === 1 ? 'Current' : 'Savings'} - ${account.iban} ${formatter.format(account.balance)}`,
         value: account.iban
       }));
+
       this.ATMOptions = this.bankAccounts.map(account => ({
-        label: `${account.typeId === 1 ? 'Current' : 'Savings'} - ${account.iban} ${account.balance}€`,
+        label: `${account.typeId === 1 ? 'Current' : 'Savings'} - ${account.iban} ${formatter.format(account.balance)}`,
         value: account.iban
       }));
     },
@@ -226,19 +237,24 @@ export default {
                     const isAccountFromActive = this.bankAccountFrom.statusId !== 1;
                     const isAccountToActive = this.bankAccountTo.statusId !== 1;
                     const isSameType = this.bankAccountFrom.typeId === this.bankAccountTo.typeId;
+                    const isNotBelowAbsoluteLimit = (parseFloat(this.bankAccountFrom.balance) - parseFloat(this.amount)) >= this.bankAccountFrom.absoluteLimit;
 
-                    // If accounts have the same owner and both are active, or if they have the same type regardless of the owner, proceed with the transaction
-                    if ((isSameOwner && isAccountFromActive && isAccountToActive) || (isSameType && this.bankAccountFrom.typeId === 1 && isAccountFromActive && isAccountToActive)) {
+                    if (
+                        (isSameOwner && isAccountFromActive && isAccountToActive) ||
+                        (isSameType && this.bankAccountFrom.typeId === 1 && isAccountFromActive && isAccountToActive) &&
+                        (isNotBelowAbsoluteLimit)
+                    ) {
                       api.performTransaction(transactionData)
                           .then(response => {
                             const transactionResult = response.data;
                             console.log('Transaction performed successfully:', transactionResult);
+                            this.$router.push('/SuccessfulTransaction');
                           })
                           .catch(error => {
                             console.error('Error performing transaction:', error);
                           });
                     } else {
-                      console.log('Account validation failed. Transaction cannot be performed.');
+                      console.log('Nah, this is wrong mate.');
                     }
                   })
                   .catch(error => {
@@ -251,7 +267,6 @@ export default {
       } catch (error) {
         console.error('Error performing transaction:', error);
       }
-      this.$router.push('/SuccessfulTransaction');
     },
     isValidIBAN(iban) {
       // Regular expression pattern to validate IBAN
