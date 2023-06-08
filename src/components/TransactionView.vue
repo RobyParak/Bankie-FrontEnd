@@ -192,11 +192,12 @@ export default {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       });
-
-      this.bankAccountFromOption = this.bankAccounts.map(account => ({
-        label: `${account.typeId === 1 ? 'Current' : 'Savings'} - ${account.iban} ${formatter.format(account.balance)}`,
-        value: account.iban
-      }));
+      this.bankAccountFromOption = this.bankAccounts
+          .filter(account => account.iban !== 'NL01INHO0000000001')
+          .map(account => ({
+            label: `${account.typeId === 1 ? 'Current' : 'Savings'} - ${account.iban} ${formatter.format(account.balance)}`,
+            value: account.iban
+          }));
 
       this.ATMOptions = this.bankAccounts.map(account => ({
         label: `${account.typeId === 1 ? 'Current' : 'Savings'} - ${account.iban} ${formatter.format(account.balance)}`,
