@@ -85,11 +85,11 @@
               <q-icon name="search" />
             </template>
           </q-input>
-          <q-table class="my-sticky-header-table" flat bordered title="Current Account" :rows="currentAccountRows" :columns="columns" row-key="name"
+          <q-table class="my-sticky-header-table" flat bordered title="Current Account" :rows="transC" :columns="columns" row-key="name"
           />
 
           <h5 style="text-align: left;">Savings Account Balance: {{ savingsAccount.balance }}</h5>
-          <q-table class="my-sticky-header-table" flat bordered title="Savings Account" :rows="savingsAccountRows" :columns="columns" row-key="name"
+          <q-table class="my-sticky-header-table" flat bordered title="Savings Account" :rows="transS" :columns="columns" row-key="name"
           />
         </q-page>
         <q-page class="q-pa-md" style="alignment: center; padding-right: 3em;" :style="{ width: '20%' }">
@@ -115,8 +115,8 @@ export default {
       currentAccount: {},
       savingsAccount: {},
       user : {},
-      currentAccountRows: [],
-      savingsAccountRows: [],
+      transC: [],
+      transS: [],
       showUserForm: false,
     };
   },
@@ -143,10 +143,14 @@ export default {
                   this.savingsAccount = account;
                 }
               });
-              const transC = this.getAllTransactions(this.currentAccount.iban);
-              this.currentAccountRows = transC;
-              const transS = this.getAllTransactions(this.savingsAccount.iban);
-              this.savingsAccountRows = transS;
+              this.getAllTransactions(this.currentAccount.iban).then(response => {
+                this.transC = response;
+              });
+
+              this.getAllTransactions(this.savingsAccount.iban).then(response => {
+                this.transS = response; 
+              });
+
 
             })
             .catch(error => {
@@ -188,18 +192,19 @@ export default {
     // };
   },
   methods: {
-    getAllTransactions(iban) {
+    async getAllTransactions(iban) {
       try {
         console.log(iban);
-        const response = api.getTransactionsByIbanFrom(iban);
-        console.log(response.data);
-        return response.data;
-       
-
+        const fromResponse = await api.getTransactionsByIbanFrom(iban);
+        const toResponse = await api.getTransactionsByIbanTo(iban);
+        const transactions = [...fromResponse.data, ...toResponse.data];
+        console.log(transactions);
+        return transactions;
       } catch (error) {
         console.error(error);
+        return []; // Return an empty array or handle the error as needed
       }
-    },
+},
     changePage(page) {
       // Update the current page and fetch transactions for the new page
       this.currentPage = page;
@@ -239,6 +244,7 @@ export default {
         { name: 'time', required: true, label: 'Date', align: 'left', field: 'time', sortable: true },
         { name: 'accountFrom', required: true, label: 'From', align: 'left', field: 'accountFrom', sortable: true },
         { name: 'accountTo', required: true, label: 'To', align: 'left', field: 'accountTo', sortable: true },
+        { name: 'comment', required: true, label: 'Comment', align: 'left', field: 'comment', sortable: true },
         { name: 'amount', required: true, label: 'Amount', align: 'right', field: 'amount', sortable: true, format: (val) => {
           // Format the amount as currency with 2 decimal places and a euro sign
           const formattedAmount = new Intl.NumberFormat('en-US', {
