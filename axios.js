@@ -38,10 +38,10 @@ export default {
   },
   //get transactions by iban
   getTransactionsByIbanFrom(iban) {
-    return apiClient.get(`/transactions?accountfrom=${iban}`);
+    return apiClient.get(`/transactions?accountFrom=${iban}`);
   },
   getTransactionsByIbanTo(iban) {
-    return apiClient.get(`/transactions?accountto=${iban}`);
+    return apiClient.get(`/transactions?accountTo=${iban}`);
 },
     // Get all users
     getAllUsers() {

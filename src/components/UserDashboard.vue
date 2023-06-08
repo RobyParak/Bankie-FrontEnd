@@ -143,6 +143,11 @@ export default {
                   this.savingsAccount = account;
                 }
               });
+              const transC = this.getAllTransactions(this.currentAccount.iban);
+              this.currentAccountRows = transC;
+              const transS = this.getAllTransactions(this.savingsAccount.iban);
+              this.savingsAccountRows = transS;
+
             })
             .catch(error => {
               console.error('Error retrieving bank accounts:', error);
@@ -183,15 +188,13 @@ export default {
     // };
   },
   methods: {
-    async getAllTransactions(iban, isCurrent) {
+    getAllTransactions(iban) {
       try {
-        const response = await api.getTransactionHistory(iban);
-        console.log(response);
-        if(isCurrent){
-            this.currentAccountRows = response.data;
-        }else{
-            this.savingsAccountRows = response.data;
-        }
+        console.log(iban);
+        const response = api.getTransactionsByIbanFrom(iban);
+        console.log(response.data);
+        return response.data;
+       
 
       } catch (error) {
         console.error(error);
