@@ -62,21 +62,6 @@
       </q-tab-panels>
     </q-card>
 
-    <!-- <q-banner class="bg-primary text-white">
-      Unfortunately, the credit card did not go through, please try again.
-      <template v-slot:action>
-        <q-btn flat color="white" label="Dismiss" />
-        <q-btn flat color="white" label="Update Credit Card" />
-      </template>
-    </q-banner>
-
-    <q-banner class="bg-primary text-white">
-      Are you sure you want to make this transaction?
-      <template v-slot:action>
-        <q-btn flat color="#507963" label="Yes" />
-        <q-btn flat color="red" label="No" />
-      </template>
-    </q-banner> -->
   </div>
 </template>
 
@@ -105,39 +90,42 @@ export default {
     };
   },
   mounted() {
+    const email = localStorage.getItem('email');
     const token = localStorage.getItem('token');
     if (token) {
       const decodedToken = jwtDecode(token);
-      const email = decodedToken.sub;
-
-      api.getAccountByEmail(email)
+      api.getUserByEmail(email)
           .then(response => {
             // Update the user data with the retrieved data
             this.user = response.data[0];
 
             const ownerId = this.user.id; // Move the ownerId assignment inside the callback
 
-            api.getBankAccounts(ownerId)
-                .then(response => {
-                  this.bankAccounts = response.data;
-
-                  // Populate bank account options
-                  this.bankAccountFromOption = this.bankAccounts.map(account => ({
-                    label: account.iban,
-                    value: account.iban
-                  }));
-                  this.ATMOptions = this.bankAccounts.map(account => ({
-                    label: account.iban,
-                    value: account.iban
-                  }));
-                })
-                .catch(error => {
-                  console.error('Error retrieving bank accounts:', error);
-                });
+            if (decodedToken.auth === 'Employee') {
+              api.getAllBankAccounts()
+                  .then(response => {
+                    this.bankAccounts = response.data;
+                    this.populateBankAccountOptions(); // Call the extracted method here
+                  })
+                  .catch(error => {
+                    console.error('Error retrieving bank accounts:', error);
+                  });
+            } else if (decodedToken.auth === 'Customer') {
+              api.getBankAccounts(ownerId)
+                  .then(response => {
+                    this.bankAccounts = response.data;
+                    this.populateBankAccountOptions(); // Call the extracted method here
+                  })
+                  .catch(error => {
+                    console.error('Error retrieving bank accounts:', error);
+                  });
+            }
           })
           .catch(error => {
             console.error('Error retrieving user data:', error);
           });
+    } else {
+      this.$router.push('/login');
     }
   },
   setup() {
@@ -188,10 +176,21 @@ export default {
           .then(response => {
             const transactionResult = response.data;
             console.log('Transaction performed successfully:', transactionResult);
+            this.$router.push('/SuccessfulTransaction');
           })
           .catch(error => {
             console.error('Error performing transaction:', error);
           });
+    },
+    populateBankAccountOptions() {
+      this.bankAccountFromOption = this.bankAccounts.map(account => ({
+        label: `${account.typeId === 1 ? 'Current' : 'Savings'} - ${account.iban} ${account.balance}€`,
+        value: account.iban
+      }));
+      this.ATMOptions = this.bankAccounts.map(account => ({
+        label: `${account.typeId === 1 ? 'Current' : 'Savings'} - ${account.iban} ${account.balance}€`,
+        value: account.iban
+      }));
     },
     async performTransactionWithValidation() {
       const now = new Date();
@@ -216,7 +215,6 @@ export default {
             .then(response => {
               // Update the user data with the retrieved data
               this.bankAccountFrom = response.data[0];
-
               // Get accountTo details by iban
               api.getBankAccountByIban(this.bankAccountTo)
                   .then(response => {
@@ -253,6 +251,7 @@ export default {
       } catch (error) {
         console.error('Error performing transaction:', error);
       }
+      this.$router.push('/SuccessfulTransaction');
     },
     isValidIBAN(iban) {
       // Regular expression pattern to validate IBAN

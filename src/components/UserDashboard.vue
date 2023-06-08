@@ -124,7 +124,7 @@ export default {
       this.getAllTransactions(this.currentAccount.iban, true);
       this.getAllTransactions(this.savingsAccount.iban, false);
 
-      api.getAccountByEmail(email)
+      api.getUserByEmail(email)
           .then(response => {
             // Update the user data with the retrieved data
             this.user = response.data[0];
