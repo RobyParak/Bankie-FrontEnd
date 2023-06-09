@@ -150,9 +150,8 @@ export default {
   methods: {
     atmTransaction() {
       const now = new Date();
-     // const options = {day: '2-digit', month: '2-digit', year: 'numeric'};
-      //TODO change back to the top option once back end supports it
-      const options = {hour: '2-digit', minute: '2-digit'};
+     const options = {day: '2-digit', month: '2-digit', year: 'numeric'};
+
       const formattedTime = now.toLocaleTimeString([], options);
 
       const transactionData = {
@@ -206,9 +205,8 @@ export default {
     },
     async performTransactionWithValidation() {
       const now = new Date();
-      // const options = {day: '2-digit', month: '2-digit', year: 'numeric'};
-      //TODO change back to the top option once back end supports it
-      const options = {hour: '2-digit', minute: '2-digit'};
+      const options = {day: '2-digit', month: '2-digit', year: 'numeric'};
+
       const formattedTime = now.toLocaleTimeString([], options);
 
       const transactionData = {
