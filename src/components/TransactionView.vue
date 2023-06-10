@@ -35,16 +35,22 @@
               <q-input filled v-model="amount" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask/>
               <q-btn style="background: #507963; color: white;" label="Transfer" @click="performTransactionWithValidation" :disable="!isFormValid"/>
               <div class="searchByName">
-              <q-input outlined bottom-slots v-model="searchByName" label="Search IBAN by Name" counter maxlength="30" :dense="dense">
-                <template v-slot:append>
-                <q-icon name="search" />
-              </template>
-            </q-input>
-            <q-field outlined label="IBAN" stack-label>
-              <template v-slot:control>
-                <div class="self-center full-width no-outline" tabindex="0">IBAN</div>
-              </template>
-            </q-field>
+                <p class="searchbyname">
+                  Search IBAN by name below. The IBAN of the wanted user will appear unless they do not have an account at our bank
+                </p>
+                  <q-input filled v-model="searchByName" label="Search" @update:model-value="searchBankAccountByName" placeholder="Search IBAN by Name" :dense="dense" style="padding: 1em; width: 300px">
+                    <template v-slot:append>
+                      <q-icon v-if="searchByName !== ''" name="close" @click="searchByName = ''" class="cursor-pointer" />                      <q-icon name="search" />
+                    </template>
+                  </q-input>
+
+                <q-field outlined label="IBAN" stack-label>
+                  <template v-slot:control>
+                    <div class="self-center full-width no-outline" tabindex="0">
+                      {{ matchedAccount ? matchedAccount.iban : ''}}
+                    </div>
+                  </template>
+                </q-field>
           </div>
             </div>
           </div>
@@ -92,127 +98,6 @@
   </div>
 </template>
 
-<!-- <script>
-import api from '../../axios.js'
-import { ref, computed } from "vue";
-import jwtDecode from "jwt-decode";
-
-export default {
-  name: "TransactionView.vue",
-  data() {
-    return {
-      user: {},
-      bankAccounts: [],
-      bankAccountFrom: '',
-      bankAccountTo: '',
-      ibanValidationRule: [
-        (val) => !!val || "IBAN is required",
-        (val) => this.isValidIBAN(val) || "Invalid IBAN",
-      ],
-    };
-  },
-  mounted() {
-    const token = localStorage.getItem('token');
-    if (token) {
-      const decodedToken = jwtDecode(token);
-      const email = decodedToken.sub;
-
-      api.getAccountByEmail(email)
-          .then(response => {
-            // Update the user data with the retrieved data
-            this.user = response.data[0];
-
-            const ownerId = this.user.id; // Move the ownerId assignment inside the callback
-
-            api.getBankAccounts(ownerId)
-                .then(response => {
-                  this.bankAccounts = response.data;
-
-                  // Populate bank account options
-                  this.bankAccountFromOption = this.bankAccounts.map(account => ({
-                    label: account.iban,
-                    value: account.type
-                  }));
-                })
-                .catch(error => {
-                  console.error('Error retrieving bank accounts:', error);
-                });
-          })
-          .catch(error => {
-            console.error('Error retrieving user data:', error);
-          });
-    }
-  },
-  setup() {
-    const text = ref('');
-    const price = ref('');
-    const tab = ref('normal_transaction');
-    const bankAccountFromOption = ref([]);
-    const radio = ref('withdraw');
-
-    // Add computed property for filtered bank account options based on the selected bankAccountFrom
-    const bankAccountToOption = computed(() => {
-      if (this.bankAccountFrom === 'Saving') {
-        // Filter the bank accounts to only include 'Current' accounts
-        return this.bankAccounts
-          .filter(account => account.type === 'Current')
-          .map(account => ({
-            label: account.iban,
-            value: account.type
-          }));
-      } else {
-        // Return all bank accounts for other types
-        return this.bankAccounts.map(account => ({
-          label: account.iban,
-          value: account.type
-        }));
-      }
-    });
-
-    return {
-      text,
-      price,
-      tab,
-      bankAccountFromOption,
-      bankAccountToOption,
-      radio,
-    };
-  },
-  methods: {
-    createTransaction() {
-        const now = new Date();
-        const options = { hour: '2-digit', minute: '2-digit' };
-        const formattedTime = now.toLocaleTimeString([], options);
-
-        const transactionData = {
-          userPerforming: this.user.id,
-          accountFrom: this.bankAccountFrom.label,
-          accountTo: this.bankAccountTo,
-          amount: this.price,
-          time: formattedTime,
-          comment: this.text,
-        };
-      console.log(transactionData)
-      api.performTransaction(transactionData)
-        .then(response => {
-          console.log(response.data);
-        })
-        .catch(error => {
-          console.error('Error creating transaction:', error);
-        });
-    },
-    isValidIBAN(iban) {
-      // Regular expression pattern to validate IBAN
-      const ibanPattern = /^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$/;
-      return ibanPattern.test(iban);
-    },
-    backToUser(){
-      this.$router.push('/userDashboard');
-    }
-  },
-};
-</script> -->
-
 <!-- version underneath work with btn but im not sure if it makes transactions correctly -->
 <script>
 import api from '../../axios.js'
@@ -224,6 +109,7 @@ export default {
   name: "TransactionView.vue",
   data() {
     return {
+      searchByName:'',
       user: {},
       bankAccounts: [],
       bankAccountFrom: '',
@@ -291,6 +177,38 @@ export default {
   },
   
   methods: {
+    searchBankAccountByName() {
+      const [firstName, lastName] = this.searchByName.split(" ");
+      console.log(firstName);
+      if (firstName) {
+        api.getBankAccountByFirstName(firstName)
+          .then(response => {
+            if (response.data.length > 0) {
+              this.matchedAccount = response.data[0];
+              return; // Exit the method early if a match is found
+            }
+            // If no match is found by first name, search by last name
+            api.getBankAccountByLastName(lastName)
+              .then(response => {
+                if (response.data.length > 0) {
+                  this.matchedAccount = response.data[0];
+                } else {
+                  this.matchedAccount = null;
+                }
+              })
+              .catch(error => {
+                console.log("No account found yet", error);
+                this.matchedAccount = null;
+              });
+          })
+          .catch(error => {
+            console.log("No account found yet", error);
+            this.matchedAccount = null;
+          });
+      } else {
+        this.matchedAccount = null;
+      }
+    },
     atmTransaction() {
       const now = new Date();
      // const options = {day: '2-digit', month: '2-digit', year: 'numeric'};

@@ -62,6 +62,7 @@ export default {
         .then(response => {
           const token = response.data.token;
           localStorage.setItem('token', token);
+          localStorage.setItem('email', this.email);
 
           // Decode the token to extract the role
           const decodedToken = jwtDecode(token);
