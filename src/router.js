@@ -5,7 +5,7 @@ import TransactionView from '@/components/TransactionView.vue';
 import RegisterUser from "@/components/RegisterUser";
 import EmployeeDashboard from "@/components/EmployeeDashboard";
 import SuccessfulRegistration from "@/components/SuccessfulRegistration";
-import SuccessfulTransactionVue from './components/SuccessfulTransaction.vue';
+import SuccessfulTransactionVue from "@/components/SuccessfulTransaction";
 
 
 const routes = [

@@ -85,11 +85,11 @@
               <q-icon name="search" />
             </template>
           </q-input>
-          <q-table class="my-sticky-header-table" flat bordered title="Current Account" :rows="currentAccountRows" :columns="columns" row-key="name"
+          <q-table class="my-sticky-header-table" flat bordered title="Current Account" :rows="filteredCurrentTransactionsRows" :columns="columns" row-key="name"
           />
 
           <h5 style="text-align: left;">Savings Account Balance: {{ savingsAccount.balance }}</h5>
-          <q-table class="my-sticky-header-table" flat bordered title="Savings Account" :rows="savingsAccountRows" :columns="columns" row-key="name"
+          <q-table class="my-sticky-header-table" flat bordered title="Savings Account" :rows="filteredSavingsTransactionsRows" :columns="columns" row-key="name"
           />
         </q-page>
         <q-page class="q-pa-md" style="alignment: center; padding-right: 3em;" :style="{ width: '20%' }">
@@ -103,141 +103,48 @@
 <script>
 import api from '../../axios.js'
 import jwtDecode from 'jwt-decode';
-// import { computed, ref } from 'vue';
+import { computed, ref, onMounted, reactive } from 'vue';
 
 export default {
   name: 'UserDashboard',
-  data() {
-    return {
-      updateUser: {},
-      splitterPosition: 0,
-      bankAccounts: [],
-      currentAccount: {},
-      savingsAccount: {},
-      user : {},
-      currentAccountRows: [],
-      savingsAccountRows: [],
-      showUserForm: false,
-    };
-  },
-    mounted() {
-    const token = localStorage.getItem('token');
-    if (token) {
-      const decodedToken = jwtDecode(token);
-      const email = decodedToken.sub;
-
-      api.getUserByEmail(email)
-        .then(response => {
-          // Update the user data with the retrieved data
-          this.user = response.data[0];
-          api.getBankAccounts(this.user.id)
-            .then(response => {
-              this.bankAccounts = response.data;
-              console.log(this.bankAccounts);
-
-              // Categorize bank accounts as current or saving
-              this.bankAccounts.forEach(account => {
-                if (account.typeId == 1) {
-                  this.currentAccount = account;
-                } else if (account.typeId == 0) {
-                  this.savingsAccount = account;
-                }
-              });
-            })
-            .catch(error => {
-              console.error('Error retrieving bank accounts:', error);
-            });
-        })
-        .catch(error => {
-          console.error('Error retrieving user data:', error);
-        });
-    } else {
-      this.$router.push('/login');
-    }
-  },
   setup() {
-    // const transactionSearchText = ref('');
-    // const filteredCurrentRows = computed(() => {
-    //   return currentAccountRows.value.filter(
-    //     (row) =>
-    //       row.time.includes(transactionSearchText.value) ||
-    //       row.accountFrom.includes(transactionSearchText.value) ||
-    //       row.accountTo.includes(transactionSearchText.value) ||
-    //       row.comment.includes(transactionSearchText.value)
-    //   );
-    // });
-    // const filteredSavingsRows = computed(() => {
-    //   return savingsAccountRows.value.filter(
-    //     (row) =>
-    //       row.time.includes(transactionSearchText.value) ||
-    //       row.accountFrom.includes(transactionSearchText.value) ||
-    //       row.accountTo.includes(transactionSearchText.value) ||
-    //       row.comment.includes(transactionSearchText.value)
-    //   );
-    // });
+    const updateUser = reactive({});
+    const splitterPosition = ref(0);
+    const bankAccounts = ref([]);
+    const currentAccount = ref({});
+    const savingsAccount = ref({});
+    const user = reactive({});
+    const showUserForm = ref(false);
+    const transactionSearchText = ref('');
 
-    // return {
-    //   transactionSearchText,
-    //   filteredCurrentRows,
-    //   filteredSavingsRows
-    // };
-  },
-  methods: {
-    async getAllTransactions(iban, isCurrent) {
-      try {
-        const response = await api.getTransactionHistory(iban);
-        console.log(response);
-        if(isCurrent){
-            this.currentAccountRows = response.data;
-        }else{
-            this.savingsAccountRows = response.data;
-        }
-
-      } catch (error) {
-        console.error(error);
-      }
-    },
-    changePage(page) {
-      // Update the current page and fetch transactions for the new page
-      this.currentPage = page;
-    },
-    logout() {
-      // Clear session data and route to log in page
-      localStorage.clear();
-      this.$router.push('/login');
-    },
-    toggleUserForm() {
-      this.showUserForm = !this.showUserForm;
-    },
-    saveUser() {
-      this.updatedUser = { ...this.user }; // Store the updated user data
-
-      // Perform the PUT request to the API with the updatedUser data
-      api.updateUserById(this.user.id, this.updatedUser)
-          .then(response => {
-            // Handle the response
-            console.log('User updated successfully:', response.data);
-          })
-          .catch(error => {
-            // Handle the error
-            console.error('Error updating user:', error);
-          });
-    },
-  },
-  watch: {
-    transactionSearchText() {
-      this.searchCurrentRows();
-      this.searchSavingsRows();
-    },
-  },
-  computed: {
-    columns() {
-      return [
-        { name: 'time', required: true, label: 'Date', align: 'left', field: 'time', sortable: true },
-        { name: 'accountFrom', required: true, label: 'From', align: 'left', field: 'accountFrom', sortable: true },
-        { name: 'accountTo', required: true, label: 'To', align: 'left', field: 'accountTo', sortable: true },
-        { name: 'comment', label: 'Comment', align: 'left', field: 'comment', sortable: true },
-        { name: 'amount', required: true, label: 'Amount', align: 'right', field: 'amount', sortable: true, format: (val) => {
+    const transC = ref([]);
+    const transS = ref([]);
+    const filteredCurrentTransactionsRows = computed(() => {
+      return transC.value.filter(row =>
+        row.comment.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
+        row.accountTo.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
+        row.accountFrom.toLowerCase().includes(transactionSearchText.value.toLowerCase())
+      );
+    });
+    const filteredSavingsTransactionsRows = computed(() => {
+      return transS.value.filter(row =>
+        row.comment.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
+        row.accountTo.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
+        row.accountFrom.toLowerCase().includes(transactionSearchText.value.toLowerCase())
+      );
+    });
+    const columns = [
+  { field: 'time', label: 'Date' },
+  { field: 'accountTo', label: 'Account To' },
+  { field: 'accountFrom', label: 'Account From' },
+  {
+        name: 'amount',
+        required: true,
+        label: 'Amount',
+        align: 'right',
+        field: 'amount',
+        sortable: true,
+        format: (val) => {
           // Format the amount as currency with 2 decimal places and a euro sign
           const formattedAmount = new Intl.NumberFormat('en-US', {
             style: 'currency',
@@ -248,13 +155,113 @@ export default {
 
           return formattedAmount;
         },
-      }
-      ];
-    },
-  },
-};
+      },
+  { field: 'comment', label: 'Comment' },
+];
 
+
+
+
+    const getAllTransactions = async (iban) => {
+      try {
+        console.log(iban);
+        const fromResponse = await api.getTransactionsByIbanFrom(iban);
+        const toResponse = await api.getTransactionsByIbanTo(iban);
+        const transactions = [...fromResponse.data, ...toResponse.data];
+        console.log(transactions);
+        return transactions;
+      } catch (error) {
+        console.error(error);
+        return []; // Return an empty array or handle the error as needed
+      }
+    };
+
+    const fetchUserAndAccounts = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        const decodedToken = jwtDecode(token);
+        const email = decodedToken.sub;
+
+        try {
+          const response = await api.getAccountByEmail(email);
+          // Update the user data with the retrieved data
+          user.firstName = response.data[0].firstName;
+          user.lastName = response.data[0].lastName;
+          user.email = response.data[0].email;
+          user.phoneNumber = response.data[0].phoneNumber;
+
+          const bankAccountsResponse = await api.getBankAccounts(response.data[0].id);
+          bankAccounts.value = bankAccountsResponse.data;
+
+          // Categorize bank accounts as current or saving
+          bankAccounts.value.forEach(account => {
+            if (account.typeId === 1) {
+              currentAccount.value = account;
+            } else if (account.typeId === 0) {
+              savingsAccount.value = account;
+            }
+          });
+
+          // Fetch transactions for the current account
+          const currentAccountTransactions = await getAllTransactions(currentAccount.value.iban);
+          transC.value = currentAccountTransactions;
+
+          // Fetch transactions for the savings account
+          const savingsAccountTransactions = await getAllTransactions(savingsAccount.value.iban);
+          transS.value = savingsAccountTransactions;
+        } catch (error) {
+          console.error('Error retrieving user data:', error);
+        }
+      } else {
+        // Redirect the user to the login page if there is no token
+        window.location.href = '/login';
+        console.log('No token available');
+      }
+    };
+
+    const logout = () => {
+      localStorage.removeItem('token');
+      // Redirect the user to the login page after logging out
+      window.location.href = '/login';
+      console.log('Logged out');
+    };
+
+    const toggleUserForm = () => {
+      showUserForm.value = !showUserForm.value;
+    };
+
+    const saveUser = async () => {
+      try {
+        await api.updateUser(user);
+        toggleUserForm();
+      } catch (error) {
+        console.error('Error updating user data:', error);
+      }
+    };
+
+    onMounted(fetchUserAndAccounts);
+
+    return {
+      updateUser,
+      splitterPosition,
+      bankAccounts,
+      currentAccount,
+      savingsAccount,
+      user,
+      showUserForm,
+      transactionSearchText,
+      filteredCurrentTransactionsRows,
+      filteredSavingsTransactionsRows,
+      logout,
+      toggleUserForm,
+      saveUser,
+      columns
+    };
+  }
+};
 </script>
+
+
 
 
 <style scoped>
