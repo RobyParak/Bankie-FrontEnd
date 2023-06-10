@@ -183,7 +183,7 @@ export default {
         const email = decodedToken.sub;
 
         try {
-          const response = await api.getAccountByEmail(email);
+          const response = await api.getUserByEmail(email);
           // Update the user data with the retrieved data
           user.firstName = response.data[0].firstName;
           user.lastName = response.data[0].lastName;
