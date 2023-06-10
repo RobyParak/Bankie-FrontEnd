@@ -38,16 +38,16 @@ export default {
   },
   //get transactions by iban
   getTransactionsByIbanFrom(iban) {
-    return apiClient.get(`/transactions?accountfrom=${iban}`);
+    return apiClient.get(`/transactions?accountFrom=${iban}`);
   },
   getTransactionsByIbanTo(iban) {
-    return apiClient.get(`/transactions?accountto=${iban}`);
-},
-    // Get all users
-    getAllUsers() {
-      return apiClient.get('/users');
-    },
-      //get all bank accounts
+    return apiClient.get(`/transactions?accountTo=${iban}`);
+  },
+  // Get all users
+  getAllUsers() {
+    return apiClient.get('/users');
+  },
+  //get all bank accounts
   getAllBankAccounts() {
     return apiClient.get(`/bankaccounts`);
   },
@@ -71,7 +71,7 @@ export default {
     return apiClient.post('/bankaccounts', accountData);
   },
   // Get account details
-  getAccountByEmail(email) {
+  getUserByEmail(email) {
     return apiClient.get(`/users?email=${email}`);
   },
   // Perform a transaction
