@@ -140,7 +140,7 @@
         </q-tab-panel>
 
         <q-tab-panel name="delUser">
-          <div class="text-h6">Delete User</div>
+          <div class="text-h6">Select User</div>
           <q-input outlined bottom-slots v-model="text" label="Search Users" counter maxlength="30" :dense="dense">
   <template v-slot:append>
     <q-icon name="search" />
@@ -154,8 +154,9 @@
       selection="single"
       v-model:selected="selectedUser"
     />
-    <q-btn  class="q-ml-auto" style="background: #800000; color: white" label="Delete User" type="submit" @click="deleteUser" />
-          <q-btn class="q-ml-auto" style="background: #547863; color: white" label="Create Bank Account" type="submit" @click="createAccount" />
+    <q-btn  class="q-ml-auto" style="background: #800000; color: white; margin-right: 0.5em" label="Delete User" type="submit" @click="deleteUser" />
+          <q-btn class="q-ml-auto" style="background: #547863; color: white; margin-right: 0.5em " label="Create Current Account" type="submit" @click="createCurrentAccount" :disable="hasExistingCurrentAccount"/>
+          <q-btn class="q-ml-auto" style="background: #547863; color: white; margin-right: 0.5em" label="Create Savings Account" type="submit" @click="createSavingsAccount" :disable="hasExistingSavingsAccount" />
 
         </q-tab-panel>
 <!-- DEACTIVATE BANK ACCOUNT -->
@@ -190,28 +191,28 @@ export default {
   setup() {
     const errorMessage = ref('');
     const bankAccountColumns = [
-      { name: 'iban', align: 'left', label: 'IBAN', field: 'iban' },
-      { name: 'ownerId', label: 'Owner ID', field: 'ownerId' },
-      { name: 'statusId', label: 'status', field: 'statusId' },
-      { name: 'amount', label: 'Balance', field: 'amount' },
-      { name: 'absoluteLimit', label: 'Absolute Limit (editable)', field: 'absoluteLimit'},
-      { name: 'typeId', label: 'Type ID', field: 'typeId' },
+      {name: 'iban', align: 'left', label: 'IBAN', field: 'iban'},
+      {name: 'ownerId', label: 'Owner ID', field: 'ownerId'},
+      {name: 'statusId', label: 'status', field: 'statusId'},
+      {name: 'amount', label: 'Balance', field: 'amount'},
+      {name: 'absoluteLimit', label: 'Absolute Limit (editable)', field: 'absoluteLimit'},
+      {name: 'typeId', label: 'Type ID', field: 'typeId'},
     ];
 
     const bankAccountRows = ref([]);
 
     const usersColumns = [
-      { name: 'firstName', align: 'left', label: 'First Name', field: 'firstName' },
-      { name: 'lastName', align: 'center', label: 'Last Name', field: 'lastName' },
-      { name: 'phoneNumber', label: 'Phone', field: 'phoneNumber' },
-      { name: 'Email', label: 'Email', field: 'email' },
-      { name: 'dailyLimit', label: 'Daily Limit', field: 'dailyLimit' },
-      { name: 'transactionLimit', label: 'Transaction Limit', field: 'transactionLimit' },
-      { name: 'role', label: 'Role', field: 'role' },
-      { name: 'bsn', label: 'BSN', field: 'bsn' },
+      {name: 'firstName', align: 'left', label: 'First Name', field: 'firstName'},
+      {name: 'lastName', align: 'center', label: 'Last Name', field: 'lastName'},
+      {name: 'phoneNumber', label: 'Phone', field: 'phoneNumber'},
+      {name: 'Email', label: 'Email', field: 'email'},
+      {name: 'dailyLimit', label: 'Daily Limit', field: 'dailyLimit'},
+      {name: 'transactionLimit', label: 'Transaction Limit', field: 'transactionLimit'},
+      {name: 'role', label: 'Role', field: 'role'},
+      {name: 'bsn', label: 'BSN', field: 'bsn'},
     ];
 
-    const usersRows = ref([]); 
+    const usersRows = ref([]);
     const getAllUsers = async () => {
       try {
         const response = await api.getAllUsers();
@@ -232,19 +233,33 @@ export default {
     const bankAccountSearchText = ref('');
     const filteredUsersRows = computed(() => {
       return usersRows.value.filter(row =>
-        row.firstName.toLowerCase().includes(userSearchText.value.toLowerCase()) ||
-        row.lastName.toLowerCase().includes(userSearchText.value.toLowerCase()) ||
-        row.phoneNumber.includes(userSearchText.value) ||
-        row.email.toLowerCase().includes(userSearchText.value.toLowerCase()) ||
-        row.role.toLowerCase().includes(userSearchText.value.toLocaleLowerCase())
+          row.firstName.toLowerCase().includes(userSearchText.value.toLowerCase()) ||
+          row.lastName.toLowerCase().includes(userSearchText.value.toLowerCase()) ||
+          row.phoneNumber.includes(userSearchText.value) ||
+          row.email.toLowerCase().includes(userSearchText.value.toLowerCase()) ||
+          row.role.toLowerCase().includes(userSearchText.value.toLocaleLowerCase())
       );
     });
     const filteredBankAccountRows = computed(() => {
-  return bankAccountRows.value.filter(row =>
-    row.iban.toLowerCase().includes(bankAccountSearchText.value.toLowerCase()) ||
-    String(row.ownerId).includes(bankAccountSearchText.value)
-  );
-});
+      return bankAccountRows.value.filter(row =>
+          row.iban.toLowerCase().includes(bankAccountSearchText.value.toLowerCase()) ||
+          String(row.ownerId).includes(bankAccountSearchText.value)
+      );
+    });
+    // eslint-disable-next-line no-unused-vars
+    const hasExistingCurrentAccount = computed(() => {
+      const selectedUser = this.selectedUser[0];
+      if (!selectedUser) return false; // No user selected
+      const existingAccounts = this.bankAccountRows.value.filter(account => account.ownerId === selectedUser.id);
+      return existingAccounts.length > 0;
+    });
+    // eslint-disable-next-line no-unused-vars
+    const hasExistingSavingsAccount = computed(() => {
+      const selectedUser = this.selectedUser[0];
+      if (!selectedUser) return false; // No user selected
+      const existingAccounts = this.bankAccountRows.value.filter(account => account.ownerId === selectedUser.id);
+      return existingAccounts.length > 0;
+    });
 
     onMounted(() => {
       getAllUsers();
@@ -272,34 +287,51 @@ export default {
         localStorage.clear();
         this.$router.push('/login');
       },
-    createAccount() {
+    createSavingsAccount(){
       const accountData = {
-      ownerId : this.selectedUser[0].id,
+        ownerId : this.selectedUser[0].id,
+        statusId: 0,
+        balance: 0,
+        absoluteLimit: 0,
+        //type id 1 is current and 0 is savings
+        typeId: 0,
+      };
+    this.createAccount(accountData);
+    },
+    createCurrentAccount() {
+      const accountData = {
+        ownerId: this.selectedUser[0].id,
         statusId: 0,
         balance: 0,
         absoluteLimit: 0,
         //type id 1 is current and 0 is savings
         typeId: 1,
       };
+      this.createAccount(accountData);
+    },
+    createAccount(accountData) {
       api.createAccount(accountData)
           .then(response => {
             console.log('Bank Account created successfully:', response.data);
-            this.selectedUser[0].role = 'Customer';
-            api.updateUserById(this.selectedUser[0].id, this.selectedUser[0])
-                .then(response => {
-                  console.log('User updated successfully:', response.data);
-                  this.getAllUsers();
-                })
-                .catch(error => {
-                  // Handle the error
-                  console.error('Error updating user:', error);
-                });
+            if (this.selectedUser[0].role === 'User') {
+              this.selectedUser[0].role = 'Customer';
+              api.updateUserById(this.selectedUser[0].id, this.selectedUser[0])
+                  .then(response => {
+                    console.log('User updated successfully:', response.data);
+                    this.getAllUsers();
+                  })
+                  .catch(error => {
+                    // Handle the error
+                    console.error('Error updating user:', error);
+                  });
+            }
           })
           .catch(error => {
             // Handle the error
             console.error('Error creating bank account:', error);
           });
     },
+
     async getAllUsers() {
       try {
         const response = await api.getAllUsers();
