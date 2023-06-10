@@ -94,6 +94,12 @@
         </q-page>
         <q-page class="q-pa-md" style="alignment: center; padding-right: 3em;" :style="{ width: '20%' }">
           <q-btn class="q-ml-auto" id="transactionButton" label="Make a new transaction" to="/transaction" />
+          <div class="q-pa-sm">
+        <div class="q-pb-sm">
+          Model: {{ datePicker }}
+        </div>
+        <q-date v-model="datePicker" range />
+      </div>
         </q-page>
       </q-splitter>
     </q-page-container>
@@ -116,22 +122,29 @@ export default {
     const user = reactive({});
     const showUserForm = ref(false);
     const transactionSearchText = ref('');
-
+    const datePicker = ref({ from: null, to: null });
     const transC = ref([]);
     const transS = ref([]);
+    const startDate = new Date(datePicker.value.from);
+    const endDate = new Date(datePicker.value.to);
     const filteredCurrentTransactionsRows = computed(() => {
-      return transC.value.filter(row =>
-        row.comment.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
-        row.accountTo.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
-        row.accountFrom.toLowerCase().includes(transactionSearchText.value.toLowerCase())
-      );
+      // Filter the rows based on the date range and search text
+      return transC.value.filter(row => {
+        const rowDate = new Date(row.time);
+        const searchTextMatch = row.description.toLowerCase().includes(transactionSearchText.value.toLowerCase());
+        const dateRangeMatch = (!startDate || rowDate >= startDate) && (!endDate || rowDate <= endDate);
+        return searchTextMatch && dateRangeMatch;
+      });
     });
+
     const filteredSavingsTransactionsRows = computed(() => {
-      return transS.value.filter(row =>
-        row.comment.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
-        row.accountTo.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
-        row.accountFrom.toLowerCase().includes(transactionSearchText.value.toLowerCase())
-      );
+      // Filter the rows based on the date range and search text
+      return transS.value.filter(row => {
+        const rowDate = new Date(row.time);
+        const searchTextMatch = row.description.toLowerCase().includes(transactionSearchText.value.toLowerCase());
+        const dateRangeMatch = (!startDate || rowDate >= startDate) && (!endDate || rowDate <= endDate);
+        return searchTextMatch && dateRangeMatch;
+      });
     });
     const columns = [
   { field: 'time', label: 'Date' },
@@ -255,7 +268,8 @@ export default {
       logout,
       toggleUserForm,
       saveUser,
-      columns
+      columns,
+      datePicker
     };
   }
 };
@@ -287,7 +301,7 @@ export default {
 <style lang="sass">
 .my-sticky-header-table
   height: 310px
-  width: 90%
+  width: 100%
 
   .q-table__top
     background-color: #f919a9
