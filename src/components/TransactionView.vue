@@ -92,7 +92,7 @@
   </div>
 </template>
 
-<script>
+<!-- <script>
 import api from '../../axios.js'
 import { ref, computed } from "vue";
 import jwtDecode from "jwt-decode";
@@ -211,10 +211,10 @@ export default {
     }
   },
 };
-</script>
+</script> -->
 
 <!-- version underneath work with btn but im not sure if it makes transactions correctly -->
-<!-- <script>
+<script>
 import api from '../../axios.js'
 import { ref, } from "vue";
 import jwtDecode from "jwt-decode";
@@ -358,11 +358,13 @@ export default {
             .then(response => {
               // Update the user data with the retrieved data
               this.bankAccountFrom = response.data[0];
+              console.log(response.data[0]);
               // Get accountTo details by iban
               api.getBankAccountByIban(this.bankAccountTo)
                   .then(response => {
                     // Update the user data with the retrieved data
                     this.bankAccountTo = response.data[0];
+                    console.log(response.data[0]);
 
                     // Perform the validation checks
                     const isSameOwner = this.bankAccountFrom.ownerId === this.bankAccountTo.ownerId;
@@ -430,7 +432,7 @@ export default {
     },
   },
 };
-</script> -->
+</script>
 
 <style scoped>
 /* Add your custom styles here */
