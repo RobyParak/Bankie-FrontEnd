@@ -94,7 +94,7 @@
         </q-page>
         <q-page class="q-pa-md" style="alignment: center; padding-right: 3em;" :style="{ width: '20%' }">
           <q-btn class="q-ml-auto" id="transactionButton" label="Make a new transaction" to="/transaction" />
-          <div class="q-pa-md">
+          <div class="q-pa-sm">
         <div class="q-pb-sm">
           Model: {{ datePicker }}
         </div>
@@ -301,7 +301,7 @@ export default {
 <style lang="sass">
 .my-sticky-header-table
   height: 310px
-  width: 90%
+  width: 100%
 
   .q-table__top
     background-color: #f919a9
