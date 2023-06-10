@@ -49,6 +49,8 @@ export default {
       password: '',
       loginError: ''
     };
+  }, created() {
+    localStorage.clear(); // Clear the localStorage when the component is created
   },
   methods: {
     onSubmit() {
@@ -57,12 +59,12 @@ export default {
         password: this.password
       };
 
-      // Use the Axios service to make the login request
+      // Use the axios instance to make the login request and store the token and the email in localStorage
       api.login(loginData)
         .then(response => {
           const token = response.data.token;
           localStorage.setItem('token', token);
-
+          localStorage.setItem('email', this.email);
           // Decode the token to extract the role
           const decodedToken = jwtDecode(token);
           const role = decodedToken.auth;
