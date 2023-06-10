@@ -122,11 +122,11 @@
                 <q-td key="statusId" :props="props">
                   {{ props.row.statusId === 0 ? 'Active' : 'Inactive' }}
                 </q-td>
-                <q-td key="amount" :props="props">
-                  {{ props.row.amount }}
+                <q-td key="balance" :props="props">
+                  {{ props.row.balance.toLocaleString('en-US', { style: 'currency', currency: 'EUR' }) }}
                 </q-td>
                 <q-td key="absoluteLimit" :props="props" class="editable">
-                  €{{ props.row.absoluteLimit }}
+                  {{ props.row.absoluteLimit.toLocaleString('en-US', { style: 'currency', currency: 'EUR' }) }}
                   <q-popup-edit v-model="props.row.absoluteLimit" v-slot="scope">
                     <q-input v-model="scope.value" dense autofocus counter @keyup.enter="saveAndSetAbsoluteLimit(scope, props.row)"/>
                   </q-popup-edit>
@@ -191,12 +191,14 @@ export default {
   setup() {
     const errorMessage = ref('');
     const bankAccountColumns = [
-      {name: 'iban', align: 'left', label: 'IBAN', field: 'iban'},
-      {name: 'ownerId', label: 'Owner ID', field: 'ownerId'},
-      {name: 'statusId', label: 'status', field: 'statusId'},
-      {name: 'amount', label: 'Balance', field: 'amount'},
-      {name: 'absoluteLimit', label: 'Absolute Limit (editable)', field: 'absoluteLimit'},
-      {name: 'typeId', label: 'Type ID', field: 'typeId'},
+
+      { name: 'iban', align: 'left', label: 'IBAN', field: 'iban' },
+      { name: 'ownerId', label: 'Owner ID', field: 'ownerId' },
+      { name: 'statusId', label: 'status', field: 'statusId' },
+      { name: 'balance', label: 'Balance', field: 'balance' },
+      { name: 'absoluteLimit', label: 'Absolute Limit (editable)', field: 'absoluteLimit'},
+      { name: 'typeId', label: 'Type ID', field: 'typeId' },
+
     ];
 
     const bankAccountRows = ref([]);

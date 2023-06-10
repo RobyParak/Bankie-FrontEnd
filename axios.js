@@ -71,7 +71,7 @@ export default {
     return apiClient.post('/bankaccounts', accountData);
   },
   // Get account details
-  getUserByEmail(email) {
+  getAccountByEmail(email) {
     return apiClient.get(`/users?email=${email}`);
   },
   // Perform a transaction
