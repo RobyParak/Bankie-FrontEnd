@@ -31,8 +31,20 @@
           </div>
           <div class="q-pa-md" style="display: grid; float:right; height: 600px; width: 50%;">
             <div class="q-gutter-y-md column" style="max-width: 300px;">
-              <q-input filled v-model="price" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask/>
-              <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" @click="createTransaction" />
+              <q-input filled v-model="amount" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask/>
+              <q-btn style="background: #507963; color: white;" label="Transfer" @click="performTransactionWithValidation" :disable="!isFormValid"/>
+              <div class="searchByName">
+              <q-input outlined bottom-slots v-model="searchByName" label="Search IBAN by Name" counter maxlength="30" :dense="dense">
+                <template v-slot:append>
+                <q-icon name="search" />
+              </template>
+            </q-input>
+            <q-field outlined label="IBAN" stack-label>
+              <template v-slot:control>
+                <div class="self-center full-width no-outline" tabindex="0">IBAN</div>
+              </template>
+            </q-field>
+          </div>
             </div>
           </div>
         </q-tab-panel>
