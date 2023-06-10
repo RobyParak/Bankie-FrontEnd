@@ -1,6 +1,7 @@
 <template>
   <div>
     <h3>Transaction</h3>
+    <q-btn class="q-ml-auto" id="backbtn" style="background: white; color: #f919a9; border: 3px solid #f919a9;" label="Back" to="/userDashboard" />
     <q-card>
       <q-tabs
           v-model="tab"
@@ -22,7 +23,7 @@
           <div class="text-h6">Transaction</div>
           <div class="q-pa-md" style="display: grid; float:left; height: 600px; width: 50%;">
             <div class="q-gutter-y-md column" style="max-width: 300px;">
-              <q-select standout="bg-indigo-11 text-white" v-model="bankAccountFrom" :options="bankAccountFromOption" label="Select Account from" />
+              <q-select standout="indigo text-white" v-model="bankAccountFrom" :options="bankAccountFromOption" label="Select Account from" />
               <q-input v-model="bankAccountTo" :rules="ibanValidationRule" label="To" filled></q-input>
               <div class="q-pa-md" style="max-width: 300px">
                 <q-input v-model="text" filled autogrow hint="Comment" />
@@ -33,38 +34,71 @@
             <div class="q-gutter-y-md column" style="max-width: 300px;">
               <q-input filled v-model="amount" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask/>
               <q-btn style="background: #507963; color: white;" label="Transfer" @click="performTransactionWithValidation" :disable="!isFormValid"/>
+              <div class="searchByName">
+                <p class="searchbyname">
+                  Search IBAN by name below. The IBAN of the wanted user will appear unless they do not have an account at our bank
+                </p>
+                  <q-input filled v-model="searchByName" label="Search" @update:model-value="searchBankAccountByName" placeholder="Search IBAN by Name" :dense="dense" style="padding: 1em; width: 300px">
+                    <template v-slot:append>
+                      <q-icon v-if="searchByName !== ''" name="close" @click="searchByName = ''" class="cursor-pointer" />                      <q-icon name="search" />
+                    </template>
+                  </q-input>
+
+                <q-field outlined label="IBAN" stack-label>
+                  <template v-slot:control>
+                    <div class="self-center full-width no-outline" tabindex="0">
+                      {{ matchedAccount ? matchedAccount.iban : ''}}
+                    </div>
+                  </template>
+                </q-field>
+          </div>
             </div>
           </div>
         </q-tab-panel>
-        <!-- ATM TRANSACTIONS PAGE -->
+<!-- ATM TRANSACTIONS PAGE -->
         <q-tab-panel name="atm_transaction">
           <div class="text-h6">Withdraw/Deposit</div>
           <div class="q-gutter-sm">
-            <q-radio
-                v-model="radio"
-                val="withdraw"
-                label="Withdraw"
-            />
-            <q-radio
-                v-model="radio"
-                val="deposit"
-                label="Deposit"
-            />
-            <div class="q-px-sm">
+              <q-radio
+                  v-model="radio"
+                  val="withdraw"
+                  label="Withdraw"
+              />
+              <q-radio
+                  v-model="radio"
+                  val="deposit"
+                  label="Deposit"
+              />
+              <div class="q-px-sm">
               Your selection is: <strong>{{ radio }}</strong>
             </div>
-            <q-select standout="bg-indigo-11 text-white" v-model="ATMSelection" :options="ATMOptions" label="Select Account" />
-            <q-input filled v-model="amountATM" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask/>
-
-            <q-btn style="background: #507963; color: white;" label="Transfer" @click="atmTransaction" :disable="!isFormValidATM"/>
-          </div>
+              <q-input standout="bg-indigo-11 text-white" v-model="text" label="Custom standout" />
+              <q-input standout="bg-indigo-11 text-white" v-model="text" label="Custom standout" />
+              <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" @click="createTransaction" />
+            </div>
         </q-tab-panel>
       </q-tab-panels>
     </q-card>
 
+    <q-banner class="bg-primary text-white">
+      Unfortunately, the credit card did not go through, please try again.
+      <template v-slot:action>
+        <q-btn flat color="white" label="Dismiss" />
+        <q-btn flat color="white" label="Update Credit Card" />
+      </template>
+    </q-banner>
+
+    <q-banner class="bg-primary text-white">
+      Are you sure you want to make this transaction?
+      <template v-slot:action>
+        <q-btn flat color="#507963" label="Yes" />
+        <q-btn flat color="red" label="No" />
+      </template>
+    </q-banner>
   </div>
 </template>
 
+<!-- version underneath work with btn but im not sure if it makes transactions correctly -->
 <script>
 import api from '../../axios.js'
 import { ref, } from "vue";
@@ -75,6 +109,7 @@ export default {
   name: "TransactionView.vue",
   data() {
     return {
+      searchByName:'',
       user: {},
       bankAccounts: [],
       bankAccountFrom: '',
@@ -147,7 +182,41 @@ export default {
       amountATM,
     };
   },
+  
   methods: {
+    searchBankAccountByName() {
+  const [firstName, lastName] = this.searchByName.split(" ");
+  console.log(firstName);
+  if (firstName) {
+    api.getBankAccountByFirstName(firstName)
+      .then(response => {
+        if (response.data.length > 0) {
+          this.matchedAccount = response.data[0];
+          return; // Exit the method early if a match is found
+        }
+        // If no match is found by first name, search by last name
+        api.getBankAccountByLastName(lastName)
+          .then(response => {
+            if (response.data.length > 0) {
+              this.matchedAccount = response.data[0];
+            } else {
+              this.matchedAccount = null;
+            }
+          })
+          .catch(error => {
+            console.log("No account found yet", error);
+            this.matchedAccount = null;
+          });
+      })
+      .catch(error => {
+        console.log("No account found yet", error);
+        this.matchedAccount = null;
+      });
+  } else {
+    this.matchedAccount = null;
+  }
+},
+
     atmTransaction() {
       const now = new Date();
       const options = {day: '2-digit', month: '2-digit', year: 'numeric'};
@@ -304,8 +373,6 @@ export default {
 };
 </script>
 
-
-
 <style scoped>
 /* Add your custom styles here */
 </style>
@@ -319,5 +386,17 @@ export default {
 .active-tab {
   background-color: hsl(246, 36%, 57%); /* Replace with your desired background color */
 }
+#backbtn{
+  border-radius: 20px;
+  padding: 8px 16px;
+  position:absolute;
+  top: 1em;
+  left:1em;
+  margin-top: 5em;
 
+}
+
+.tab-content {
+  background-color: #ffffff; /* Replace with your desired background color */
+}
 </style>

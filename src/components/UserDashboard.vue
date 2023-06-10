@@ -287,7 +287,7 @@ export default {
 <style lang="sass">
 .my-sticky-header-table
   height: 310px
-  width: 70%
+  width: 90%
 
   .q-table__top
     background-color: #f919a9

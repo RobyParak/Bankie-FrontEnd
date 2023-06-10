@@ -85,5 +85,12 @@ export default {
   },
   updateBankAccountByIban(iban, accountData) {
     return apiClient.put(`/bankaccounts/${iban}`, accountData);
-  }
+  },
+  getBankAccountByFirstName(firstname) {
+    return apiClient.get(`/bankaccounts?first_name=${firstname}`);
+  },
+  getBankAccountByLastName(lastname) {
+    return apiClient.get(`/bankaccounts?last_name=${lastname}`);
+  },
+
 };
