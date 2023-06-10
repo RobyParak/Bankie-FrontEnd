@@ -150,21 +150,26 @@ export default {
   methods: {
     atmTransaction() {
       const now = new Date();
-      const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+      const options = {day: '2-digit', month: '2-digit', year: 'numeric'};
       const formattedTime = now.toLocaleTimeString([], options);
 
       const transactionData = {
-        userPerforming: { userModel: { ...this.user } },
-        accountFrom: { bankAccountModel: { iban: this.ATMIban } },
-        accountTo: { bankAccountModel: { iban: this.ATMSelection.value } },
-        amount: parseFloat(this.amountATM),
+        userPerforming: this.user.id,
+        amount: this.amountATM,
+        accountTo: "",
+        accountFrom: "",
         time: formattedTime,
         comment: "ATM Transaction",
       };
-      console.log(transactionData);
-      const isNotBelowAbsoluteLimit =
-          (parseFloat(this.bankAccountFrom.balance) - parseFloat(this.amount)) >=
-          this.bankAccountFrom.absoluteLimit;
+
+      if (this.radio === 'deposit') {
+        transactionData.accountFrom = this.ATMIban;
+        transactionData.accountTo = this.ATMSelection.value;
+      } else if (this.radio === 'withdraw') {
+        transactionData.accountFrom = this.ATMSelection.value;
+        transactionData.accountTo = this.ATMIban;
+      }
+      const isNotBelowAbsoluteLimit = (parseFloat(this.bankAccountFrom.balance) - parseFloat(this.amount)) >= this.bankAccountFrom.absoluteLimit;
 
       if (isNotBelowAbsoluteLimit) {
         api.performTransaction(transactionData)
@@ -185,6 +190,7 @@ export default {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       });
+
       this.bankAccountFromOption = this.bankAccounts
           .filter(account => account.iban !== 'NL01INHO0000000001')
           .map(account => ({
@@ -195,28 +201,24 @@ export default {
       this.ATMOptions = this.bankAccounts
           .filter(account => account.iban !== 'NL01INHO0000000001')
           .map(account => ({
-        label: `${account.typeId === 1 ? 'Current' : 'Savings'} - ${account.iban} ${formatter.format(account.balance)}`,
-        value: account.iban
-      }));
+            label: `${account.typeId === 1 ? 'Current' : 'Savings'} - ${account.iban} ${formatter.format(account.balance)}`,
+            value: account.iban
+          }));
     },
     async performTransactionWithValidation() {
       const now = new Date();
       const options = {day: '2-digit', month: '2-digit', year: 'numeric'};
-
       const formattedTime = now.toLocaleTimeString([], options);
 
       const transactionData = {
-        userPerforming: { userModel: { ...this.user } },
-        accountFrom: { bankAccountModel: { ...this.bankAccountFrom } },
-        accountTo: { bankAccountModel: { } },
-        amount: parseFloat(this.amount),
+        userPerforming: this.user.id,
+        accountFrom: this.bankAccountFrom.value,
+        accountTo: "",
+        amount: this.amount,
         time: formattedTime,
         comment: this.text,
       };
-
-      transactionData.accountTo.bankAccountModel = this.bankAccountTo;
-
-      console.log(transactionData);
+      transactionData.accountTo = this.bankAccountTo;
 
       try {
         // Get accountFrom details by iban
@@ -230,7 +232,6 @@ export default {
                     // Update the user data with the retrieved data
                     this.bankAccountTo = response.data[0];
 
-                    console.log(transactionData);
                     // Perform the validation checks
                     const isSameOwner = this.bankAccountFrom.ownerId === this.bankAccountTo.ownerId;
                     const isAccountFromActive = this.bankAccountFrom.statusId !== 1;
