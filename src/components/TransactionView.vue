@@ -1,7 +1,7 @@
 <template>
   <div>
     <h3>Transaction</h3>
-    <q-btn class="q-ml-auto" id="backbtn" style="background: white; color: #f919a9; border: 3px solid #f919a9;" label="Back" @click="backToUser" />
+    <q-btn class="q-ml-auto" id="backbtn" style="background: white; color: #f919a9; border: 3px solid #f919a9;" label="Back" to="/userDashboard" />
     <q-card>
       <q-tabs
           v-model="tab"
