@@ -246,20 +246,6 @@ export default {
           String(row.ownerId).includes(bankAccountSearchText.value)
       );
     });
-    // eslint-disable-next-line no-unused-vars
-    const hasExistingCurrentAccount = computed(() => {
-      const selectedUser = this.selectedUser[0];
-      if (!selectedUser) return false; // No user selected
-      const existingAccounts = this.bankAccountRows.value.filter(account => account.ownerId === selectedUser.id);
-      return existingAccounts.length > 0;
-    });
-    // eslint-disable-next-line no-unused-vars
-    const hasExistingSavingsAccount = computed(() => {
-      const selectedUser = this.selectedUser[0];
-      if (!selectedUser) return false; // No user selected
-      const existingAccounts = this.bankAccountRows.value.filter(account => account.ownerId === selectedUser.id);
-      return existingAccounts.length > 0;
-    });
 
     onMounted(() => {
       getAllUsers();
@@ -281,7 +267,18 @@ export default {
       errorMessage,
     };
   },
+  computed:{
+    hasExistingCurrentAccount() {
+return this.checkExistingAccount(this.selectedUser[0], 1)   },
+    hasExistingSavingsAccount() {
+return this.checkExistingAccount(this.selectedUser[0], 0)    },
+  },
   methods: {
+    checkExistingAccount(selectedUser, typeId) {
+      if (!selectedUser || !this.bankAccountRows) return false; // No user selected or bankAccountRows is undefined
+      const existingAccounts = this.bankAccountRows.filter(account => account.ownerId === selectedUser.id && account.typeId === typeId);
+      return existingAccounts.length > 0;
+    },
     logout() {
         // Clear session data and route to log in page
         localStorage.clear();
@@ -426,8 +423,8 @@ export default {
     goToUserDashboard(){
       this.$router.push('/userDashboard');
     }
-
   },
+
 };
 
 </script>
