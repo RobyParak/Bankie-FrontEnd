@@ -1,6 +1,7 @@
 <template>
   <div>
     <h3>Transaction</h3>
+    <q-btn class="q-ml-auto" id="backbtn" style="background: white; color: #f919a9; border: 3px solid #f919a9;" label="Back" @click="backToUser" />
     <q-card>
       <q-tabs
           v-model="tab"
@@ -205,6 +206,9 @@ export default {
       const ibanPattern = /^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$/;
       return ibanPattern.test(iban);
     },
+    backToUser(){
+      this.$router.push('/userDashboard');
+    }
   },
 };
 </script>
@@ -440,6 +444,15 @@ export default {
 /* Add the following styles */
 .active-tab {
   background-color: hsl(246, 36%, 57%); /* Replace with your desired background color */
+}
+#backbtn{
+  border-radius: 20px;
+  padding: 8px 16px;
+  position:absolute;
+  top: 1em;
+  left:1em;
+  margin-top: 5em;
+
 }
 
 .tab-content {
