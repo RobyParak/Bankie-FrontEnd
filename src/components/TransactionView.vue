@@ -293,8 +293,9 @@ export default {
   methods: {
     atmTransaction() {
       const now = new Date();
-     const options = {day: '2-digit', month: '2-digit', year: 'numeric'};
-
+     // const options = {day: '2-digit', month: '2-digit', year: 'numeric'};
+      //TODO change back to the top option once back end supports it
+      const options = {hour: '2-digit', minute: '2-digit'};
       const formattedTime = now.toLocaleTimeString([], options);
 
       const transactionData = {
@@ -325,20 +326,10 @@ export default {
           });
     },
     populateBankAccountOptions() {
-
-      const formatter = new Intl.NumberFormat('en-GB', {
-        style: 'currency',
-        currency: 'EUR',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      });
-      this.bankAccountFromOption = this.bankAccounts
-          .filter(account => account.iban !== 'NL01INHO0000000001')
-          .map(account => ({
-            label: `${account.typeId === 1 ? 'Current' : 'Savings'} - ${account.iban} ${formatter.format(account.balance)}`,
-            value: account.iban
-          }));
-
+      this.bankAccountFromOption = this.bankAccounts.map(account => ({
+        label: `${account.typeId === 1 ? 'Current' : 'Savings'} - ${account.iban} ${account.balance}€`,
+        value: account.iban
+      }));
       this.ATMOptions = this.bankAccounts.map(account => ({
         label: `${account.typeId === 1 ? 'Current' : 'Savings'} - ${account.iban} ${account.balance}€`,
         value: account.iban
@@ -346,8 +337,9 @@ export default {
     },
     async performTransactionWithValidation() {
       const now = new Date();
-      const options = {day: '2-digit', month: '2-digit', year: 'numeric'};
-
+      // const options = {day: '2-digit', month: '2-digit', year: 'numeric'};
+      //TODO change back to the top option once back end supports it
+      const options = {hour: '2-digit', minute: '2-digit'};
       const formattedTime = now.toLocaleTimeString([], options);
 
       const transactionData = {
