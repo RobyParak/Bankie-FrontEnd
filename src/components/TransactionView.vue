@@ -125,35 +125,42 @@ export default {
     };
   },
   mounted() {
+    const email = localStorage.getItem('email');
     const token = localStorage.getItem('token');
     if (token) {
       const decodedToken = jwtDecode(token);
-      const email = decodedToken.sub;
-
-      api.getAccountByEmail(email)
+      api.getUserByEmail(email)
           .then(response => {
             // Update the user data with the retrieved data
             this.user = response.data[0];
 
             const ownerId = this.user.id; // Move the ownerId assignment inside the callback
 
-            api.getBankAccounts(ownerId)
-                .then(response => {
-                  this.bankAccounts = response.data;
-
-                  // Populate bank account options
-                  this.bankAccountFromOption = this.bankAccounts.map(account => ({
-                    label: account.iban,
-                    value: account.type
-                  }));
-                })
-                .catch(error => {
-                  console.error('Error retrieving bank accounts:', error);
-                });
+            if (decodedToken.auth === 'Employee') {
+              api.getAllBankAccounts()
+                  .then(response => {
+                    this.bankAccounts = response.data;
+                    this.populateBankAccountOptions(); // Call the extracted method here
+                  })
+                  .catch(error => {
+                    console.error('Error retrieving bank accounts:', error);
+                  });
+            } else if (decodedToken.auth === 'Customer') {
+              api.getBankAccounts(ownerId)
+                  .then(response => {
+                    this.bankAccounts = response.data;
+                    this.populateBankAccountOptions(); // Call the extracted method here
+                  })
+                  .catch(error => {
+                    console.error('Error retrieving bank accounts:', error);
+                  });
+            }
           })
           .catch(error => {
             console.error('Error retrieving user data:', error);
           });
+    } else {
+      this.$router.push('/login');
     }
   },
   setup() {
@@ -178,42 +185,41 @@ export default {
   
   methods: {
     searchBankAccountByName() {
-      const [firstName, lastName] = this.searchByName.split(" ");
-      console.log(firstName);
-      if (firstName) {
-        api.getBankAccountByFirstName(firstName)
+  const [firstName, lastName] = this.searchByName.split(" ");
+  console.log(firstName);
+  if (firstName) {
+    api.getBankAccountByFirstName(firstName)
+      .then(response => {
+        if (response.data.length > 0) {
+          this.matchedAccount = response.data[0];
+          return; // Exit the method early if a match is found
+        }
+        // If no match is found by first name, search by last name
+        api.getBankAccountByLastName(lastName)
           .then(response => {
             if (response.data.length > 0) {
               this.matchedAccount = response.data[0];
-              return; // Exit the method early if a match is found
+            } else {
+              this.matchedAccount = null;
             }
-            // If no match is found by first name, search by last name
-            api.getBankAccountByLastName(lastName)
-              .then(response => {
-                if (response.data.length > 0) {
-                  this.matchedAccount = response.data[0];
-                } else {
-                  this.matchedAccount = null;
-                }
-              })
-              .catch(error => {
-                console.log("No account found yet", error);
-                this.matchedAccount = null;
-              });
           })
           .catch(error => {
             console.log("No account found yet", error);
             this.matchedAccount = null;
           });
-      } else {
+      })
+      .catch(error => {
+        console.log("No account found yet", error);
         this.matchedAccount = null;
-      }
-    },
+      });
+  } else {
+    this.matchedAccount = null;
+  }
+},
+
     atmTransaction() {
       const now = new Date();
-     // const options = {day: '2-digit', month: '2-digit', year: 'numeric'};
-      //TODO change back to the top option once back end supports it
-      const options = {hour: '2-digit', minute: '2-digit'};
+      const options = {day: '2-digit', month: '2-digit', year: 'numeric'};
       const formattedTime = now.toLocaleTimeString([], options);
 
       const transactionData = {
@@ -232,32 +238,45 @@ export default {
         transactionData.accountFrom = this.ATMSelection.value;
         transactionData.accountTo = this.ATMIban;
       }
+      const isNotBelowAbsoluteLimit = (parseFloat(this.bankAccountFrom.balance) - parseFloat(this.amount)) >= this.bankAccountFrom.absoluteLimit;
 
-      api.performTransaction(transactionData)
-          .then(response => {
-            const transactionResult = response.data;
-            console.log('Transaction performed successfully:', transactionResult);
-            this.$router.push('/SuccessfulTransaction');
-          })
-          .catch(error => {
-            console.error('Error performing transaction:', error);
-          });
+      if (isNotBelowAbsoluteLimit) {
+        api.performTransaction(transactionData)
+            .then(response => {
+              const transactionResult = response.data;
+              console.log('Transaction performed successfully:', transactionResult);
+              this.$router.push('/SuccessfulTransaction');
+            })
+            .catch(error => {
+              console.error('Error performing transaction:', error);
+            });
+      }
     },
     populateBankAccountOptions() {
-      this.bankAccountFromOption = this.bankAccounts.map(account => ({
-        label: `${account.typeId === 1 ? 'Current' : 'Savings'} - ${account.iban} ${account.balance}€`,
-        value: account.iban
-      }));
-      this.ATMOptions = this.bankAccounts.map(account => ({
-        label: `${account.typeId === 1 ? 'Current' : 'Savings'} - ${account.iban} ${account.balance}€`,
-        value: account.iban
-      }));
+      const formatter = new Intl.NumberFormat('en-GB', {
+        style: 'currency',
+        currency: 'EUR',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
+
+      this.bankAccountFromOption = this.bankAccounts
+          .filter(account => account.iban !== 'NL01INHO0000000001')
+          .map(account => ({
+            label: `${account.typeId === 1 ? 'Current' : 'Savings'} - ${account.iban} ${formatter.format(account.balance)}`,
+            value: account.iban
+          }));
+
+      this.ATMOptions = this.bankAccounts
+          .filter(account => account.iban !== 'NL01INHO0000000001')
+          .map(account => ({
+            label: `${account.typeId === 1 ? 'Current' : 'Savings'} - ${account.iban} ${formatter.format(account.balance)}`,
+            value: account.iban
+          }));
     },
     async performTransactionWithValidation() {
       const now = new Date();
-      // const options = {day: '2-digit', month: '2-digit', year: 'numeric'};
-      //TODO change back to the top option once back end supports it
-      const options = {hour: '2-digit', minute: '2-digit'};
+      const options = {day: '2-digit', month: '2-digit', year: 'numeric'};
       const formattedTime = now.toLocaleTimeString([], options);
 
       const transactionData = {
@@ -276,32 +295,35 @@ export default {
             .then(response => {
               // Update the user data with the retrieved data
               this.bankAccountFrom = response.data[0];
-              console.log(response.data[0]);
               // Get accountTo details by iban
               api.getBankAccountByIban(this.bankAccountTo)
                   .then(response => {
                     // Update the user data with the retrieved data
                     this.bankAccountTo = response.data[0];
-                    console.log(response.data[0]);
 
                     // Perform the validation checks
                     const isSameOwner = this.bankAccountFrom.ownerId === this.bankAccountTo.ownerId;
                     const isAccountFromActive = this.bankAccountFrom.statusId !== 1;
                     const isAccountToActive = this.bankAccountTo.statusId !== 1;
                     const isSameType = this.bankAccountFrom.typeId === this.bankAccountTo.typeId;
+                    const isNotBelowAbsoluteLimit = (parseFloat(this.bankAccountFrom.balance) - parseFloat(this.amount)) >= this.bankAccountFrom.absoluteLimit;
 
-                    // If accounts have the same owner and both are active, or if they have the same type regardless of the owner, proceed with the transaction
-                    if ((isSameOwner && isAccountFromActive && isAccountToActive) || (isSameType && this.bankAccountFrom.typeId === 1 && isAccountFromActive && isAccountToActive)) {
+                    if (
+                        (isSameOwner && isAccountFromActive && isAccountToActive) ||
+                        (isSameType && this.bankAccountFrom.typeId === 1 && isAccountFromActive && isAccountToActive) &&
+                        (isNotBelowAbsoluteLimit)
+                    ) {
                       api.performTransaction(transactionData)
                           .then(response => {
                             const transactionResult = response.data;
                             console.log('Transaction performed successfully:', transactionResult);
+                            this.$router.push('/SuccessfulTransaction');
                           })
                           .catch(error => {
                             console.error('Error performing transaction:', error);
                           });
                     } else {
-                      console.log('Account validation failed. Transaction cannot be performed.');
+                      console.log('Nah, this is wrong mate.');
                     }
                   })
                   .catch(error => {
@@ -314,7 +336,6 @@ export default {
       } catch (error) {
         console.error('Error performing transaction:', error);
       }
-      this.$router.push('/SuccessfulTransaction');
     },
     isValidIBAN(iban) {
       // Regular expression pattern to validate IBAN
