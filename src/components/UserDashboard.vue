@@ -79,12 +79,6 @@
       <q-splitter v-model="splitterPosition" class="my-splitter">
         <q-page class="q-pa-md" style="padding-left: 5em; padding-top: 0" :style="{ width: '80%' }">
           <h5 style="text-align: left;">Current Account Balance: {{ currentAccount.balance }}</h5>
-          <q-input filled v-model="transactionSearchText" label="Search" placeholder="Type to search transaction" :dense="dense" style="padding: 1em; width: 300px">
-            <template v-slot:append>
-              <q-icon v-if="transactionSearchText !== ''" name="close" @click="transactionSearchText = ''" class="cursor-pointer" />
-              <q-icon name="search" />
-            </template>
-          </q-input>
           <q-table class="my-sticky-header-table" flat bordered title="Current Account" :rows="filteredCurrentTransactionsRows" :columns="columns" row-key="name"
           />
 
@@ -92,14 +86,19 @@
           <q-table class="my-sticky-header-table" flat bordered title="Savings Account" :rows="filteredSavingsTransactionsRows" :columns="columns" row-key="name"
           />
         </q-page>
-        <q-page class="q-pa-md" style="alignment: center; padding-right: 3em;" :style="{ width: '20%' }">
+        <q-page class="q-pa-md" style="alignment: center; padding-right: 1em;" :style="{ width: '30%' }">
           <q-btn class="q-ml-auto" id="transactionButton" label="Make a new transaction" to="/transaction" />
-          <div class="q-pa-sm">
-        <div class="q-pb-sm">
+        <div class="q-pb-sm" id="filters">
+          <h4>Narrow down transactions here:</h4>
+          <q-input filled v-model="transactionSearchText" label="Search" placeholder="Type to search transaction" :dense="dense" style="padding: 1em; width: 300px">
+            <template v-slot:append>
+              <q-icon v-if="transactionSearchText !== ''" name="close" @click="transactionSearchText = ''" class="cursor-pointer" />
+              <q-icon name="search" />
+            </template>
+          </q-input>
           Model: {{ datePicker }}
         </div>
         <q-date v-model="datePicker" range />
-      </div>
         </q-page>
       </q-splitter>
     </q-page-container>
@@ -122,59 +121,48 @@ export default {
     const user = reactive({});
     const showUserForm = ref(false);
     const transactionSearchText = ref('');
-    const datePicker = ref({ from: null, to: null });
     const transC = ref([]);
     const transS = ref([]);
-    const startDate = new Date(datePicker.value.from);
-    const endDate = new Date(datePicker.value.to);
     const filteredCurrentTransactionsRows = computed(() => {
-      // Filter the rows based on the date range and search text
-      return transC.value.filter(row => {
-        const rowDate = new Date(row.time);
-        const searchTextMatch = row.comment.toLowerCase().includes(transactionSearchText.value.toLowerCase());
-        const dateRangeMatch = (!startDate || rowDate >= startDate) && (!endDate || rowDate <= endDate);
-        return searchTextMatch && dateRangeMatch;
-      });
+      return transC.value.filter((row) =>
+        (row.comment.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
+          row.accountTo.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
+          row.accountFrom.toLowerCase().includes(transactionSearchText.value.toLowerCase())) 
+      );
     });
 
     const filteredSavingsTransactionsRows = computed(() => {
-      // Filter the rows based on the date range and search text
-      return transS.value.filter(row => {
-        const rowDate = new Date(row.time);
-        const searchTextMatch = row.comment.toLowerCase().includes(transactionSearchText.value.toLowerCase());
-        const dateRangeMatch = (!startDate || rowDate >= startDate) && (!endDate || rowDate <= endDate);
-        return searchTextMatch && dateRangeMatch;
-      });
+      return transS.value.filter((row) =>
+        (row.comment.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
+          row.accountTo.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
+          row.accountFrom.toLowerCase().includes(transactionSearchText.value.toLowerCase())) 
+      );
     });
     const columns = [
-  { field: 'time', label: 'Date' },
-  { field: 'accountTo', label: 'Account To' },
-  { field: 'accountFrom', label: 'Account From' },
-  {
-        name: 'amount',
-        required: true,
-        label: 'Amount',
-        align: 'right',
-        field: 'amount',
-        sortable: true,
-        format: (val) => {
-          // Format the amount as currency with 2 decimal places and a euro sign
-          const formattedAmount = new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'EUR',
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          }).format(val);
+      { field: 'time', label: 'Date' },
+      { field: 'accountTo', label: 'Account To' },
+      { field: 'accountFrom', label: 'Account From' },
+      {
+            name: 'amount',
+            required: true,
+            label: 'Amount',
+            align: 'right',
+            field: 'amount',
+            sortable: true,
+            format: (val) => {
+              // Format the amount as currency with 2 decimal places and a euro sign
+              const formattedAmount = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'EUR',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              }).format(val);
 
-          return formattedAmount;
-        },
-      },
-  { field: 'comment', label: 'Comment' },
-];
-
-
-
-
+              return formattedAmount;
+            },
+          },
+      { field: 'comment', label: 'Comment' },
+      ];
     const getAllTransactions = async (iban) => {
       try {
         console.log(iban);
@@ -252,7 +240,9 @@ export default {
       }
     };
 
-    onMounted(fetchUserAndAccounts);
+    onMounted(() => {
+      fetchUserAndAccounts();
+    });
 
     return {
       updateUser,
@@ -269,15 +259,14 @@ export default {
       toggleUserForm,
       saveUser,
       columns,
-      datePicker
+      datePicker: ref({
+        from: new Date(new Date().getTime() - 10 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10).replace(/-/g, "/"),
+        to: new Date().toISOString().slice(0, 10).replace(/-/g, "/")
+      })
     };
   }
 };
 </script>
-
-
-
-
 <style scoped>
 #logoutBtn {
   border-radius: 20px;
@@ -294,6 +283,11 @@ export default {
   border-radius: 20px;
   padding: 8px 16px;
   position: center;
+  background-color: rgb(77, 117, 85);
+  color: white;
+}
+#filters{
+  margin-top: 7em;
 }
 
 </style>
@@ -301,7 +295,7 @@ export default {
 <style lang="sass">
 .my-sticky-header-table
   height: 310px
-  width: 100%
+  width: 70%
 
   .q-table__top
     background-color: #f919a9
