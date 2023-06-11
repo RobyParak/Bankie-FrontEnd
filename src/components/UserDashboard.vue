@@ -141,7 +141,7 @@ export default {
       // Filter the rows based on the date range and search text
       return transS.value.filter(row => {
         const rowDate = new Date(row.time);
-        const searchTextMatch = row.description.toLowerCase().includes(transactionSearchText.value.toLowerCase());
+        const searchTextMatch = row.comment.toLowerCase().includes(transactionSearchText.value.toLowerCase());
         const dateRangeMatch = (!startDate || rowDate >= startDate) && (!endDate || rowDate <= endDate);
         return searchTextMatch && dateRangeMatch;
       });
