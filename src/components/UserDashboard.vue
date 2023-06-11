@@ -94,6 +94,10 @@
         </q-page>
         <q-page class="q-pa-md" style="alignment: center; padding-right: 3em;" :style="{ width: '20%' }">
           <q-btn class="q-ml-auto" id="transactionButton" label="Make a new transaction" to="/transaction" />
+        <div class="q-pb-sm">
+          Model: {{ datePicker }}
+        </div>
+        <q-date v-model="datePicker" range />
         </q-page>
       </q-splitter>
     </q-page-container>
@@ -116,48 +120,48 @@ export default {
     const user = reactive({});
     const showUserForm = ref(false);
     const transactionSearchText = ref('');
-
     const transC = ref([]);
     const transS = ref([]);
     const filteredCurrentTransactionsRows = computed(() => {
-      return transC.value.filter(row =>
-        row.comment.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
-        row.accountTo.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
-        row.accountFrom.toLowerCase().includes(transactionSearchText.value.toLowerCase())
+      return transC.value.filter((row) =>
+        (row.comment.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
+          row.accountTo.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
+          row.accountFrom.toLowerCase().includes(transactionSearchText.value.toLowerCase())) 
       );
     });
+
     const filteredSavingsTransactionsRows = computed(() => {
-      return transS.value.filter(row =>
-        row.comment.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
-        row.accountTo.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
-        row.accountFrom.toLowerCase().includes(transactionSearchText.value.toLowerCase())
+      return transS.value.filter((row) =>
+        (row.comment.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
+          row.accountTo.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
+          row.accountFrom.toLowerCase().includes(transactionSearchText.value.toLowerCase())) 
       );
     });
     const columns = [
-  { field: 'time', label: 'Date' },
-  { field: 'accountTo', label: 'Account To' },
-  { field: 'accountFrom', label: 'Account From' },
-  {
-        name: 'amount',
-        required: true,
-        label: 'Amount',
-        align: 'right',
-        field: 'amount',
-        sortable: true,
-        format: (val) => {
-          // Format the amount as currency with 2 decimal places and a euro sign
-          const formattedAmount = new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'EUR',
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          }).format(val);
+      { field: 'time', label: 'Date' },
+      { field: 'accountTo', label: 'Account To' },
+      { field: 'accountFrom', label: 'Account From' },
+      {
+            name: 'amount',
+            required: true,
+            label: 'Amount',
+            align: 'right',
+            field: 'amount',
+            sortable: true,
+            format: (val) => {
+              // Format the amount as currency with 2 decimal places and a euro sign
+              const formattedAmount = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'EUR',
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              }).format(val);
 
-          return formattedAmount;
-        },
-      },
-  { field: 'comment', label: 'Comment' },
-];
+              return formattedAmount;
+            },
+          },
+      { field: 'comment', label: 'Comment' },
+      ];
     const getAllTransactions = async (iban) => {
       try {
         console.log(iban);
@@ -235,7 +239,9 @@ export default {
       }
     };
 
-    onMounted(fetchUserAndAccounts);
+    onMounted(() => {
+      fetchUserAndAccounts();
+    });
 
     return {
       updateUser,
@@ -251,7 +257,11 @@ export default {
       logout,
       toggleUserForm,
       saveUser,
-      columns
+      columns,
+      datePicker: ref({
+        from: new Date(new Date().getTime() - 10 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10).replace(/-/g, "/"),
+        to: new Date().toISOString().slice(0, 10).replace(/-/g, "/")
+      })
     };
   }
 };
