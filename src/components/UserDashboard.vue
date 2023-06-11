@@ -158,10 +158,6 @@ export default {
       },
   { field: 'comment', label: 'Comment' },
 ];
-
-
-
-
     const getAllTransactions = async (iban) => {
       try {
         console.log(iban);
@@ -214,7 +210,7 @@ export default {
         }
       } else {
         // Redirect the user to the login page if there is no token
-        // window.location.href = '/login';
+        window.location.href = '/login';
         console.log('No token available');
       }
     };
@@ -222,7 +218,7 @@ export default {
     const logout = () => {
       localStorage.removeItem('token');
       // Redirect the user to the login page after logging out
-      // window.location.href = '/login';
+      window.location.href = '/login';
       console.log('Logged out');
     };
 
@@ -260,10 +256,6 @@ export default {
   }
 };
 </script>
-
-
-
-
 <style scoped>
 #logoutBtn {
   border-radius: 20px;
