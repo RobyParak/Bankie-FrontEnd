@@ -187,7 +187,6 @@ import { ref, onMounted, computed } from 'vue';
 export default {
   setup() {
     const errorMessage = ref('');
-    const refreshFlag = ref(false);
     const bankAccountColumns = [
       {name: 'iban', align: 'left', label: 'IBAN', field: 'iban'},
       {name: 'ownerId', label: 'Owner ID', field: 'ownerId', sortable: true},
@@ -264,17 +263,16 @@ export default {
       filteredUsersRows,
       filteredBankAccountRows,
       errorMessage,
-      refreshFlag,
+
     };
   },
   computed: {
     hasExistingCurrentAccount() {
-      // Include `refreshFlag` in the dependencies
-      return this.checkExistingAccount(this.selectedUser[0], 1, this.refreshFlag);
+
+      return this.checkExistingAccount(this.selectedUser[0], 1);
     },
     hasExistingSavingsAccount() {
-      // Include `refreshFlag` in the dependencies
-      return this.checkExistingAccount(this.selectedUser[0], 0, this.refreshFlag);
+      return this.checkExistingAccount(this.selectedUser[0], 0 );
     },
   },
 
@@ -299,6 +297,8 @@ export default {
         typeId: 0,
       };
       this.createAccount(accountData);
+      //refresh the page
+      window.location.reload();
     },
     createCurrentAccount() {
       const accountData = {
@@ -310,6 +310,7 @@ export default {
         typeId: 1,
       };
       this.createAccount(accountData);
+      window.location.reload();
     },
     createAccount(accountData) {
       api.createAccount(accountData)
