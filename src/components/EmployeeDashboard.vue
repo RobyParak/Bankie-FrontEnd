@@ -357,7 +357,6 @@ export default {
     },
     disableBankie()
     {
-      //TODO encrypt IBAN once Catalin has added encryption to backend
       // 0 = active, 1 = disabled
       this.selectedBankAccount[0].statusId = 1;
       if (this.selectedBankAccount[0].balance > 0) {
