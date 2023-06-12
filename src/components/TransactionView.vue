@@ -34,7 +34,7 @@
             <div class="q-gutter-y-md column" style="max-width: 300px;">
               <q-input filled v-model="amount" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask/>
               <q-btn style="background: #507963; color: white;" label="Transfer" @click="performTransactionWithValidation" :disable="!isFormValid"/>
-              <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
+              <div v-if="errorMessage" class="error-message" style="color: maroon">{{ errorMessage }}</div>
               <div class="searchByName">
                 <p class="searchbyname">
                   Search IBAN by name below (CAPITALIZED). The IBAN of the wanted user will appear unless they do not have an account at our bank
@@ -76,7 +76,7 @@
             <q-select standout="bg-indigo-11 text-white" v-model="ATMSelection" :options="ATMOptions" label="Select Account" />
             <q-input filled v-model="amountATM" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask/>
             <q-btn style="background: #507963; color: white;" label="Transfer" @click="atmTransaction" :disable="!isFormValidATM"/>
-            <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
+            <div v-if="errorMessage" class="error-message" style="color: maroon">{{ errorMessage }}</div>
           </div>
         </q-tab-panel>
       </q-tab-panels>
@@ -233,7 +233,7 @@ export default {
         api.getBankAccountByIban(this.ATMSelection.value)
             .then(response => {
               this.ATMSelection = response.data[0];
-              const isNotBelowAbsoluteLimit = (parseFloat(this.ATMSelection.balance) - parseFloat(this.amount)) >= this.ATMSelection.absoluteLimit;
+              const isNotBelowAbsoluteLimit = (parseFloat(this.ATMSelection.balance) - parseFloat(this.amountATM)) >= this.ATMSelection.absoluteLimit;
 
               if (this.radio === 'withdraw' && isNotBelowAbsoluteLimit) {
                 this.performTransaction(transactionData);
@@ -303,7 +303,6 @@ export default {
                   .then(response => {
                     // Update the user data with the retrieved data
                     this.bankAccountTo = response.data[0];
-
                     // Perform the validation checks
                     const isSameOwner = this.bankAccountFrom.ownerId === this.bankAccountTo.ownerId;
                     const isAccountFromActive = this.bankAccountFrom.statusId !== 1;
@@ -318,16 +317,19 @@ export default {
                     ) {
                       this.performTransaction(transactionData);
                     } else {
+                      console.log("Cannot transfer from savings to current different owner");
                       this.errorMessage ='Nah, this is wrong mate, need to be two current accounts to do this transaction.';
                     }
                   })
                   .catch(error => {
-                    console.error('Error retrieving accountTo data:', error);
-                  });
+                    console.log(error);
+                    this.errorMessage = error.response.data.message;
+                  })
             })
             .catch(error => {
-              console.error('Error retrieving accountFrom data:', error);
-            });
+              console.log(error);
+              this.errorMessage = error.response.data.message;
+            })
       } catch (error) {
         console.error('Error performing transaction:', error);
       }
