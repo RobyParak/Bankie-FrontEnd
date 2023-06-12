@@ -157,8 +157,8 @@
               v-model:selected="selectedUser"
           />
           <q-btn  class="q-ml-auto" style="background: #800000; color: white; margin-right: 0.5em" label="Delete User" type="submit" @click="deleteUser" />
-          <q-btn class="q-ml-auto" style="background: #547863; color: white; margin-right: 0.5em " label="Create Current Account" type="submit" @click="createCurrentAccount" :disable="hasExistingCurrentAccount || btndisable"/>
-          <q-btn class="q-ml-auto" style="background: #547863; color: white; margin-right: 0.5em" label="Create Savings Account" type="submit" @click="createSavingsAccount" :disable="hasExistingSavingsAccount || btndisable" />
+          <q-btn class="q-ml-auto" style="background: #547863; color: white; margin-right: 0.5em" label="Create Current Account" type="submit" @click="createCurrentAccount" :disable="hasExistingCurrentAccount" />
+          <q-btn class="q-ml-auto" style="background: #547863; color: white; margin-right: 0.5em" label="Create Savings Account" type="submit" @click="createSavingsAccount" :disable="hasExistingSavingsAccount" />
 
         </q-tab-panel>
         <!-- DEACTIVATE BANK ACCOUNT -->
@@ -187,7 +187,7 @@ import { ref, onMounted, computed } from 'vue';
 export default {
   setup() {
     const errorMessage = ref('');
-    const btndisable = ref(false);
+    const refreshFlag = ref(false);
     const bankAccountColumns = [
       {name: 'iban', align: 'left', label: 'IBAN', field: 'iban'},
       {name: 'ownerId', label: 'Owner ID', field: 'ownerId', sortable: true},
@@ -245,6 +245,7 @@ export default {
       );
     });
 
+
     onMounted(() => {
       getAllUsers();
       getAllBankAccounts();
@@ -263,15 +264,20 @@ export default {
       filteredUsersRows,
       filteredBankAccountRows,
       errorMessage,
-      btndisable
+      refreshFlag,
     };
   },
-  computed:{
+  computed: {
     hasExistingCurrentAccount() {
-      return this.checkExistingAccount(this.selectedUser[0], 1)   },
+      // Include `refreshFlag` in the dependencies
+      return this.checkExistingAccount(this.selectedUser[0], 1, this.refreshFlag);
+    },
     hasExistingSavingsAccount() {
-      return this.checkExistingAccount(this.selectedUser[0], 0)    },
+      // Include `refreshFlag` in the dependencies
+      return this.checkExistingAccount(this.selectedUser[0], 0, this.refreshFlag);
+    },
   },
+
   methods: {
     checkExistingAccount(selectedUser, typeId) {
       if (!selectedUser || !this.bankAccountRows) return false; // No user selected or bankAccountRows is undefined
@@ -307,8 +313,8 @@ export default {
     },
     createAccount(accountData) {
       api.createAccount(accountData)
-          .then(response => {
-            console.log('Bank Account created successfully:', response.data);
+          .then(() => {
+            console.log('Bank Account created successfully:');
             this.btndisable = true; // user should not be able to send a bunch of requests in one go so btn disabled 
             if (this.selectedUser[0].role === 'User') {
               this.selectedUser[0].role = 'Customer';
@@ -340,9 +346,9 @@ export default {
     deleteUser() {
       const user =this.selectedUser[0];
       api.deleteUserById(user.id)
-          .then(response => {
+          .then(() => {
             this.getAllUsers();
-            console.log('User deleted successfully:', response.data);
+            console.log('User deleted successfully:');
           })
           .catch(error => {
             // Handle the error
