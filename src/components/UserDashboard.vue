@@ -128,7 +128,7 @@ export default {
     const bankAccounts = ref([]);
     const currentAccount = ref({});
     const savingsAccount = ref({});
-    const user = reactive({});
+    const user = ref({});
     const showUserForm = ref(false);
     const transactionSearchText = ref('');
     const transC = ref([]);
@@ -153,7 +153,7 @@ const filteredSavingsTransactionsRows = computed(() => {
 });
 
 const isWithinTimeRange = (dateTime) => {
-  console.log(dateTime);
+
   const datePickerObject = datePicker.value;
   console.log(datePicker.value);
 
@@ -215,7 +215,6 @@ function formatDate(val) {
         const fromResponse = await api.getTransactionsByIbanFrom(iban);
         const toResponse = await api.getTransactionsByIbanTo(iban);
         const transactions = [...fromResponse.data, ...toResponse.data];
-        console.log(transactions);
         return transactions;
       } catch (error) {
         console.error(error);
@@ -232,13 +231,7 @@ function formatDate(val) {
         try {
           const response = await api.getUserByEmail(email);
           // Update the user data with the retrieved data
-          user.firstName = response.data[0].firstName;
-          user.lastName = response.data[0].lastName;
-          user.email = response.data[0].email;
-          user.phoneNumber = response.data[0].phoneNumber;
-          user.role = response.data[0].role;
-          user.transactionLimit = response.data[0].transactionLimit;
-          user.dailyLimit = response.data[0].dailyLimit;
+          user.value = response.data[0];
 
           const bankAccountsResponse = await api.getBankAccounts(response.data[0].id);
           bankAccounts.value = bankAccountsResponse.data;
@@ -275,19 +268,6 @@ function formatDate(val) {
       console.log('Logged out');
     };
 
-    const toggleUserForm = () => {
-      showUserForm.value = !showUserForm.value;
-    };
-
-    const saveUser = async () => {
-      try {
-        await api.updateUser(user);
-        toggleUserForm();
-      } catch (error) {
-        console.error('Error updating user data:', error);
-      }
-    };
-
     onMounted(() => {
       fetchUserAndAccounts();
     });
@@ -303,8 +283,6 @@ function formatDate(val) {
       filteredCurrentTransactionsRows,
       filteredSavingsTransactionsRows,
       logout,
-      toggleUserForm,
-      saveUser,
       columns,
       datePicker: ref({
         from: new Date(new Date().getTime() - 10 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10).replace(/-/g, "/"),
@@ -313,6 +291,23 @@ function formatDate(val) {
     };
   },
   methods:{
+    toggleUserForm() {
+      this.showUserForm = !this.showUserForm;
+    },
+    saveUser() {
+      this.updatedUser = { ...this.user }; // Store the updated user data
+      console.log(this.updatedUser);
+      // Perform the PUT request to the API with the updatedUser data
+      api.updateUserById(this.user.id, this.updatedUser)
+          .then(response => {
+            // Handle the response
+            console.log('User updated successfully:', response.data);
+          })
+          .catch(error => {
+            // Handle the error
+            console.error('Error updating user:', error);
+          });
+    },
     formatCurrency(amount) {
       return new Intl.NumberFormat('en-EU', {
         style: 'currency',
