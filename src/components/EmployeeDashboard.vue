@@ -122,8 +122,15 @@
                 <q-td key="statusId" :props="props">
                   {{ props.row.statusId === 0 ? 'Active' : 'Inactive' }}
                 </q-td>
-                <q-td key="amount" :props="props">
-                  {{ props.row.amount }}
+                <q-td key="balance" :props="props">
+                  {{
+                    new Intl.NumberFormat('en-US', {
+                      style: 'currency',
+                      currency: 'EUR',
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2
+                    }).format(props.row.balance)
+                  }}
                 </q-td>
                 <q-td key="absoluteLimit" :props="props" class="editable">
                   €{{ props.row.absoluteLimit }}
@@ -194,7 +201,7 @@ export default {
       {name: 'iban', align: 'left', label: 'IBAN', field: 'iban'},
       {name: 'ownerId', label: 'Owner ID', field: 'ownerId'},
       {name: 'statusId', label: 'status', field: 'statusId'},
-      {name: 'amount', label: 'Balance', field: 'amount'},
+      {name: 'balance', label: 'Balance', field: 'balance'},
       {name: 'absoluteLimit', label: 'Absolute Limit (editable)', field: 'absoluteLimit'},
       {name: 'typeId', label: 'Type ID', field: 'typeId'},
     ];
