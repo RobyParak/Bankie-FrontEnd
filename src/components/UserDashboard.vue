@@ -88,12 +88,10 @@
     <q-page-container>
       <q-splitter v-model="splitterPosition" class="my-splitter">
         <q-page class="q-pa-md" style="padding-left: 5em; padding-top: 0" :style="{ width: '80%' }">
-          <h5 style="text-align: left;">Current Account Balance: {{ currentAccount.balance }}</h5>
+          <h5 style="text-align: left;">Current Account Balance: {{ formatCurrency(currentAccount.balance) }}</h5>
           <q-table class="my-sticky-header-table" flat bordered title="Current Account" :rows="filteredCurrentTransactionsRows" :columns="columns" row-key="name"
           />
-
-          <h5 style="text-align: left;">Savings Account Balance: {{ savingsAccount.balance }}</h5>
-          <q-table class="my-sticky-header-table" flat bordered title="Savings Account" :rows="filteredSavingsTransactionsRows" :columns="columns" row-key="name"
+          <h5 style="text-align: left;">Savings Account Balance: {{ formatCurrency(savingsAccount.balance) }}</h5>          <q-table class="my-sticky-header-table" flat bordered title="Savings Account" :rows="filteredSavingsTransactionsRows" :columns="columns" row-key="name"
           />
         </q-page>
         <q-page class="q-pa-md" style="alignment: center; padding-right: 1em;" :style="{ width: '30%' }">
@@ -119,7 +117,6 @@
 import api from '../../axios.js'
 import jwtDecode from 'jwt-decode';
 import { computed, ref, onMounted, reactive, watch } from 'vue';
-
 export default {
   name: 'UserDashboard',
   setup() {
@@ -316,17 +313,18 @@ function formatDate(val) {
     };
   },
   methods:{
+    formatCurrency(amount) {
+      return new Intl.NumberFormat('en-EU', {
+        style: 'currency',
+        currency: 'EUR',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(amount);
+    },
     goToEmployeeDashboard(){
       console.log("method reached");
       this.$router.push('/EmployeeDashboard');
     },
-    formatCurrency(amount) {
-      // Convert the amount to euros
-      var euros = (amount / 100).toFixed(2);
-
-      // Add the currency symbol and thousand separators
-      return euros.replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " €";
-    }
   }
 };
 </script>
