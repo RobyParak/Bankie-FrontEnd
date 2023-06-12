@@ -162,8 +162,8 @@
               v-model:selected="selectedUser"
           />
           <q-btn  class="q-ml-auto" style="background: #800000; color: white; margin-right: 0.5em" label="Delete User" type="submit" @click="deleteUser" />
-          <q-btn class="q-ml-auto" style="background: #547863; color: white; margin-right: 0.5em " label="Create Current Account" type="submit" @click="createCurrentAccount" :disable="hasExistingCurrentAccount"/>
-          <q-btn class="q-ml-auto" style="background: #547863; color: white; margin-right: 0.5em" label="Create Savings Account" type="submit" @click="createSavingsAccount" :disable="hasExistingSavingsAccount" />
+          <q-btn class="q-ml-auto" style="background: #547863; color: white; margin-right: 0.5em " label="Create Current Account" type="submit" @click="createCurrentAccount" :disable="hasExistingCurrentAccount || btndisable"/>
+          <q-btn class="q-ml-auto" style="background: #547863; color: white; margin-right: 0.5em" label="Create Savings Account" type="submit" @click="createSavingsAccount" :disable="hasExistingSavingsAccount || btndisable" />
 
         </q-tab-panel>
         <!-- DEACTIVATE BANK ACCOUNT -->
@@ -197,6 +197,7 @@ import { ref, onMounted, computed } from 'vue';
 export default {
   setup() {
     const errorMessage = ref('');
+    const btndisable = ref(false);
     const bankAccountColumns = [
       {name: 'iban', align: 'left', label: 'IBAN', field: 'iban'},
       {name: 'ownerId', label: 'Owner ID', field: 'ownerId'},
@@ -272,6 +273,7 @@ export default {
       filteredUsersRows,
       filteredBankAccountRows,
       errorMessage,
+      btndisable
     };
   },
   computed:{
@@ -317,6 +319,7 @@ export default {
       api.createAccount(accountData)
           .then(response => {
             console.log('Bank Account created successfully:', response.data);
+            this.btndisable = true;
             if (this.selectedUser[0].role === 'User') {
               this.selectedUser[0].role = 'Customer';
               api.updateUserById(this.selectedUser[0].id, this.selectedUser[0])
