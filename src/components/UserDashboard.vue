@@ -1,9 +1,15 @@
 <template>
   <q-btn class="q-ml-auto" id="logoutBtn" style="background: #f919a9; color: white" label="Logout" @click="logout" />
   <q-layout view="hHh Lpr fFf">
+    <q-btn
+  label="To Employee Dashboard"
+  style="background: #f919a9; color: white; float: right; top:1em"
+  @click="goToEmployeeDashboard"
+  v-if="user.role === 'Employee'"
+/>
     <h3>Dashboard</h3>
     <div style="display: flex; flex-direction: column; align-items: flex-start;">
-      <h4 style="text-align: left; padding-left: 1em; margin-bottom: 0;">Welcome, {{ user.firstName + " " + user.lastName}}!</h4>
+      <h4 style="text-align: left; padding-left: 1em; margin-bottom: 0;">Welcome, {{ user.firstName + " " + user.lastName }}!</h4>
       <q-btn
           label="Edit your info"
           id="EditUser"
@@ -224,6 +230,7 @@ function formatDate(val) {
           user.lastName = response.data[0].lastName;
           user.email = response.data[0].email;
           user.phoneNumber = response.data[0].phoneNumber;
+          user.role = response.data[0].role;
 
           const bankAccountsResponse = await api.getBankAccounts(response.data[0].id);
           bankAccounts.value = bankAccountsResponse.data;
@@ -301,6 +308,12 @@ function formatDate(val) {
         to: new Date().toISOString().slice(0, 10).replace(/-/g, "/")
       })
     };
+  },
+  methods:{
+    goToEmployeeDashboard(){
+      console.log("method reached");
+      this.$router.push('/EmployeeDashboard');
+    }
   }
 };
 </script>
