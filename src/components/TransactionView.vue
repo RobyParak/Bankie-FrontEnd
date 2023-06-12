@@ -75,6 +75,7 @@
             <q-select standout="bg-indigo-11 text-white" v-model="ATMSelection" :options="ATMOptions" label="Select Account" />
             <q-input filled v-model="amountATM" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask/>
             <q-btn style="background: #507963; color: white;" label="Transfer" @click="atmTransaction" :disable="!isFormValidATM"/>
+            <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
           </div>
         </q-tab-panel>
       </q-tab-panels>
@@ -93,7 +94,9 @@ import jwtDecode from "jwt-decode";
 export default {
   name: "TransactionView.vue",
   data() {
+    let errorMessage = ref(null);
     return {
+      errorMessage,
       searchByName:'',
       user: {},
       bankAccounts: [],
@@ -203,40 +206,56 @@ export default {
 },
 
     atmTransaction() {
-      const now = new Date();
-      const options = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
-      const formattedDateTime = now.toLocaleString([], options);
 
       const transactionData = {
         userPerforming: this.user.id,
         amount: this.amountATM,
         accountTo: "",
         accountFrom: "",
-        time: formattedDateTime,
         comment: "ATM Transaction",
       };
+
+      let typeOfTransaction = "";
 
       if (this.radio === 'deposit') {
         transactionData.accountFrom = this.ATMIban;
         transactionData.accountTo = this.ATMSelection.value;
+       typeOfTransaction = "deposit";
       } else if (this.radio === 'withdraw') {
         transactionData.accountFrom = this.ATMSelection.value;
         transactionData.accountTo = this.ATMIban;
+        typeOfTransaction = "withdraw";
       }
+      transactionData.comment += " " + typeOfTransaction;
       console.log(transactionData);
-      const isNotBelowAbsoluteLimit = (parseFloat(this.bankAccountFrom.balance) - parseFloat(this.amount)) >= this.bankAccountFrom.absoluteLimit;
 
-      if (isNotBelowAbsoluteLimit) {
-        api.performTransaction(transactionData)
+        api.getBankAccountByIban(this.ATMSelection.value)
             .then(response => {
-              const transactionResult = response.data;
-              console.log('Transaction performed successfully:', transactionResult);
-              this.$router.push('/SuccessfulTransaction');
+              this.ATMSelection = response.data[0];
+              const isNotBelowAbsoluteLimit = (parseFloat(this.ATMSelection.balance) - parseFloat(this.amount)) >= this.ATMSelection.absoluteLimit;
+
+              if (this.radio === 'withdraw' && isNotBelowAbsoluteLimit) {
+                this.performTransaction(transactionData);
+              } else if (this.radio === 'deposit') {
+                this.performTransaction(transactionData);
+              } else {
+                this.errorMessage = "You can't withdraw more than your absolute limit, you twat";
+              }
             })
             .catch(error => {
-              console.error('Error performing transaction:', error);
+              console.error('Error retrieving account data:', error);
             });
-      }
+      },
+    performTransaction(transactionData) {
+      api.performTransaction(transactionData)
+          .then(response => {
+            const transactionResult = response.data;
+            console.log('Transaction performed successfully:', transactionResult);
+            this.$router.push('/SuccessfulTransaction');
+          })
+          .catch(error => {
+            console.error('Error performing transaction:', error);
+          });
     },
     populateBankAccountOptions() {
       const formatter = new Intl.NumberFormat('en-GB', {
@@ -261,20 +280,17 @@ export default {
           }));
     },
     async performTransactionWithValidation() {
-      const now = new Date();
-      const options = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
-      const formattedDateTime = now.toLocaleString([], options);
 
       const transactionData = {
         userPerforming: this.user.id,
         accountFrom: this.bankAccountFrom.value,
         accountTo: "",
         amount: this.amount,
-        time: formattedDateTime,
         comment: this.text,
       };
       transactionData.accountTo = this.bankAccountTo;
 
+      console.log(transactionData);
       try {
         // Get accountFrom details by iban
         api.getBankAccountByIban(transactionData.accountFrom)
@@ -299,15 +315,7 @@ export default {
                         (isSameType && this.bankAccountFrom.typeId === 1 && isAccountFromActive && isAccountToActive) &&
                         (isNotBelowAbsoluteLimit)
                     ) {
-                      api.performTransaction(transactionData)
-                          .then(response => {
-                            const transactionResult = response.data;
-                            console.log('Transaction performed successfully:', transactionResult);
-                            this.$router.push('/SuccessfulTransaction');
-                          })
-                          .catch(error => {
-                            console.error('Error performing transaction:', error);
-                          });
+                      this.performTransaction(transactionData);
                     } else {
                       console.log('Nah, this is wrong mate, need to be two current accounts to do this transaction.');
                     }
