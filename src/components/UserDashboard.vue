@@ -16,6 +16,10 @@
           style="background: #f919a9; color: white; margin-top: 0.5em; margin-left: 3em;"
           @click="toggleUserForm"
       />
+      <div class="limits" style="margin-top: 3em; margin-left: 6em;">
+            <p class="transLim">Transaction Limit:  €{{ user.transactionLimit }}</p>
+            <p class="transLim">Daily Limit:  €{{ user.dailyLimit }}</p>
+          </div>
     </div>
 
     <div v-if="showUserForm" class="q-pa-md">
@@ -231,6 +235,8 @@ function formatDate(val) {
           user.email = response.data[0].email;
           user.phoneNumber = response.data[0].phoneNumber;
           user.role = response.data[0].role;
+          user.transactionLimit = response.data[0].transactionLimit;
+          user.dailyLimit = response.data[0].dailyLimit;
 
           const bankAccountsResponse = await api.getBankAccounts(response.data[0].id);
           bankAccounts.value = bankAccountsResponse.data;
@@ -313,6 +319,13 @@ function formatDate(val) {
     goToEmployeeDashboard(){
       console.log("method reached");
       this.$router.push('/EmployeeDashboard');
+    },
+    formatCurrency(amount) {
+      // Convert the amount to euros
+      var euros = (amount / 100).toFixed(2);
+
+      // Add the currency symbol and thousand separators
+      return euros.replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " €";
     }
   }
 };
