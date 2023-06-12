@@ -176,7 +176,6 @@ const isWithinTimeRange = (time) => {
     label: 'Amount',
     align: 'right',
     field: 'amount',
-    sortable: true,
     format: (val) => {
       const formattedAmount = new Intl.NumberFormat('en-US', {
         style: 'currency',

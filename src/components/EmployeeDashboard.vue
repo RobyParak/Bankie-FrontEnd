@@ -148,11 +148,6 @@
 
         <q-tab-panel name="delUser">
           <div class="text-h6">Select User</div>
-          <q-input outlined bottom-slots v-model="text" label="Search Users" counter maxlength="30" :dense="dense">
-            <template v-slot:append>
-              <q-icon name="search" />
-            </template>
-          </q-input>
           <q-table
               flat bordered
               :rows="usersRows"
@@ -169,11 +164,6 @@
         <!-- DEACTIVATE BANK ACCOUNT -->
         <q-tab-panel name="delAccount">
           <div class="text-h6">Deactivate Bank Account</div>
-          <q-input outlined bottom-slots v-model="text" label="Search Bank Accounts" counter maxlength="30" :dense="dense">
-            <template v-slot:append>
-              <q-icon name="search" />
-            </template>
-          </q-input>
           <q-table
               flat bordered
               :rows="bankAccountRows"
@@ -200,7 +190,7 @@ export default {
     const btndisable = ref(false);
     const bankAccountColumns = [
       {name: 'iban', align: 'left', label: 'IBAN', field: 'iban'},
-      {name: 'ownerId', label: 'Owner ID', field: 'ownerId'},
+      {name: 'ownerId', label: 'Owner ID', field: 'ownerId', sortable: true},
       {name: 'statusId', label: 'status', field: 'statusId'},
       {name: 'balance', label: 'Balance', field: 'balance'},
       {name: 'absoluteLimit', label: 'Absolute Limit (editable)', field: 'absoluteLimit'},
@@ -210,13 +200,13 @@ export default {
     const bankAccountRows = ref([]);
 
     const usersColumns = [
-      {name: 'firstName', align: 'left', label: 'First Name', field: 'firstName'},
+      {name: 'firstName', align: 'left', label: 'First Name', field: 'firstName', sortable: true},
       {name: 'lastName', align: 'center', label: 'Last Name', field: 'lastName'},
       {name: 'phoneNumber', label: 'Phone', field: 'phoneNumber'},
       {name: 'Email', label: 'Email', field: 'email'},
       {name: 'dailyLimit', label: 'Daily Limit', field: 'dailyLimit'},
       {name: 'transactionLimit', label: 'Transaction Limit', field: 'transactionLimit'},
-      {name: 'role', label: 'Role', field: 'role'},
+      {name: 'role', label: 'Role', field: 'role', sortable: true},
       {name: 'bsn', label: 'BSN', field: 'bsn'},
     ];
 
