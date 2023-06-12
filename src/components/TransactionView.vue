@@ -34,6 +34,7 @@
             <div class="q-gutter-y-md column" style="max-width: 300px;">
               <q-input filled v-model="amount" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask/>
               <q-btn style="background: #507963; color: white;" label="Transfer" @click="performTransactionWithValidation" :disable="!isFormValid"/>
+              <div v-if="errorMessage" class="error-message">{{ errorMessage }}</div>
               <div class="searchByName">
                 <p class="searchbyname">
                   Search IBAN by name below (CAPITALIZED). The IBAN of the wanted user will appear unless they do not have an account at our bank
@@ -317,7 +318,7 @@ export default {
                     ) {
                       this.performTransaction(transactionData);
                     } else {
-                      console.log('Nah, this is wrong mate, need to be two current accounts to do this transaction.');
+                      this.errorMessage ='Nah, this is wrong mate, need to be two current accounts to do this transaction.';
                     }
                   })
                   .catch(error => {
