@@ -108,11 +108,12 @@
 <script>
 import api from '../../axios.js'
 import jwtDecode from 'jwt-decode';
-import { computed, ref, onMounted, reactive } from 'vue';
+import { computed, ref, onMounted, reactive, watch } from 'vue';
 
 export default {
   name: 'UserDashboard',
   setup() {
+    // const datePicker =  ref({ from: '2023/06/08', to: '2023/06/12' })
     const updateUser = reactive({});
     const splitterPosition = ref(0);
     const bankAccounts = ref([]);
@@ -123,46 +124,80 @@ export default {
     const transactionSearchText = ref('');
     const transC = ref([]);
     const transS = ref([]);
+    const datePicker = ref([]);
+
     const filteredCurrentTransactionsRows = computed(() => {
-      return transC.value.filter((row) =>
-        (row.comment.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
-          row.accountTo.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
-          row.accountFrom.toLowerCase().includes(transactionSearchText.value.toLowerCase())) 
-      );
-    });
+  return transC.value.filter((row) =>
+    (row.comment.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
+      row.accountTo.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
+      row.accountFrom.toLowerCase().includes(transactionSearchText.value.toLowerCase())) &&
+    isWithinTimeRange(row.time)
+  );
+});
 
-    const filteredSavingsTransactionsRows = computed(() => {
-      return transS.value.filter((row) =>
-        (row.comment.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
-          row.accountTo.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
-          row.accountFrom.toLowerCase().includes(transactionSearchText.value.toLowerCase())) 
-      );
-    });
+const filteredSavingsTransactionsRows = computed(() => {
+  return transS.value.filter((row) =>
+    (row.comment.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
+      row.accountTo.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
+      row.accountFrom.toLowerCase().includes(transactionSearchText.value.toLowerCase())) &&
+    isWithinTimeRange(row.time)
+  );
+});
+
+const isWithinTimeRange = (time) => {
+  console.log(time);
+  const datePickerObject = JSON.parse(JSON.stringify(datePicker.value));
+  console.log(datePickerObject);
+
+  if (!datePickerObject || !datePickerObject.from || !datePickerObject.to) {
+    return true; // If from or to date is not set, consider all transactions within range
+  }
+
+  const selectedFromDate = new Date(datePickerObject.from.replace(/\//g, "-"));
+  const selectedToDate = new Date(datePickerObject.to.replace(/\//g, "-"));
+  const transactionTime = new Date(time);
+
+  return transactionTime >= selectedFromDate && transactionTime <= selectedToDate;
+  };
     const columns = [
-      { field: 'time', label: 'Date' },
-      { field: 'accountTo', label: 'Account To' },
-      { field: 'accountFrom', label: 'Account From' },
-      {
-            name: 'amount',
-            required: true,
-            label: 'Amount',
-            align: 'right',
-            field: 'amount',
-            sortable: true,
-            format: (val) => {
-              // Format the amount as currency with 2 decimal places and a euro sign
-              const formattedAmount = new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'EUR',
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              }).format(val);
+  { field: 'time', label: 'Date', format: (val) => formatDate(val) },
+  { field: 'accountTo', label: 'Account To' },
+  { field: 'accountFrom', label: 'Account From' },
+  {
+    name: 'amount',
+    required: true,
+    label: 'Amount',
+    align: 'right',
+    field: 'amount',
+    sortable: true,
+    format: (val) => {
+      const formattedAmount = new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'EUR',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(val);
 
-              return formattedAmount;
-            },
-          },
-      { field: 'comment', label: 'Comment' },
-      ];
+      return formattedAmount;
+    },
+  },
+  { field: 'comment', label: 'Comment' },
+];
+// formatting for the userdash dateTime
+function formatDate(val) {
+  const options = {
+    day: 'numeric',
+    month: 'numeric',
+    year: '2-digit',
+    hour: 'numeric',
+    minute: 'numeric',
+    second: 'numeric',
+    hour12: true,
+  };
+
+  return new Date(val).toLocaleString('en-US', options);
+}
+
     const getAllTransactions = async (iban) => {
       try {
         const fromResponse = await api.getTransactionsByIbanFrom(iban);
@@ -201,7 +236,6 @@ export default {
               savingsAccount.value = account;
             }
           });
-
           // Fetch transactions for the current account
           const currentAccountTransactions = await getAllTransactions(currentAccount.value.iban);
           transC.value = currentAccountTransactions;
@@ -238,11 +272,15 @@ export default {
         console.error('Error updating user data:', error);
       }
     };
+    watch(datePicker, () => {
+      // Refresh the filtered transactions when the date range changes
+      transC.value = filteredCurrentTransactionsRows.value;
+      transS.value = filteredSavingsTransactionsRows.value;
+    }, { deep: true });
 
     onMounted(() => {
       fetchUserAndAccounts();
     });
-
     return {
       updateUser,
       splitterPosition,

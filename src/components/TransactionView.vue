@@ -36,7 +36,7 @@
               <q-btn style="background: #507963; color: white;" label="Transfer" @click="performTransactionWithValidation" :disable="!isFormValid"/>
               <div class="searchByName">
                 <p class="searchbyname">
-                  Search IBAN by name below. The IBAN of the wanted user will appear unless they do not have an account at our bank
+                  Search IBAN by name below (CAPITALIZED). The IBAN of the wanted user will appear unless they do not have an account at our bank
                 </p>
                   <q-input filled v-model="searchByName" label="Search" @update:model-value="searchBankAccountByName" placeholder="Search IBAN by Name" :dense="dense" style="padding: 1em; width: 300px">
                     <template v-slot:append>
@@ -172,38 +172,38 @@ export default {
   },
   
   methods: {
+    //could put debouncer to delay get request - no error every time user puts in letter
     searchBankAccountByName() {
-  const [firstName, lastName] = this.searchByName.split(" ");
-  console.log(firstName);
-  if (firstName) {
-    api.getBankAccountByFirstName(firstName)
-      .then(response => {
-        if (response.data.length > 0) {
-          this.matchedAccount = response.data[0];
-          return; // Exit the method early if a match is found
-        }
-        // If no match is found by first name, search by last name
-        api.getBankAccountByLastName(lastName)
+      const [firstName, lastName] = this.searchByName.split(" ");
+      console.log(firstName);
+      if (firstName) {
+        api.getBankAccountByFirstName(firstName)
           .then(response => {
             if (response.data.length > 0) {
               this.matchedAccount = response.data[0];
-            } else {
-              this.matchedAccount = null;
+              return;
             }
+            api.getBankAccountByLastName(lastName)
+              .then(response => {
+                if (response.data.length > 0) {
+                  this.matchedAccount = response.data[0];
+                } else {
+                  this.matchedAccount = null;
+                }
+              })
+              .catch(error => {
+                console.log("No account found yet", error);
+                this.matchedAccount = null;
+              });
           })
           .catch(error => {
             console.log("No account found yet", error);
             this.matchedAccount = null;
           });
-      })
-      .catch(error => {
-        console.log("No account found yet", error);
+      } else {
         this.matchedAccount = null;
-      });
-  } else {
-    this.matchedAccount = null;
-  }
-},
+      }
+    },
 
     atmTransaction() {
 
