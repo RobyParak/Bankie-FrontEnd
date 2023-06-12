@@ -177,21 +177,7 @@ export default {
     searchBankAccountByName() {
       const [firstName, lastName] = this.searchByName.split(" ");
 
-      api.getBankAccountByLastName(lastName)
-          .then(response => {
-            if (response.data.length > 0) {
-              this.matchedAccount = response.data[0];
-              return;
-            } else {
-              this.matchedAccount = null;
-            }
-          })
-          .catch(error => {
-            console.log("No account found yet", error);
-            this.matchedAccount = null;
-          });
-
-        api.getBankAccountByFirstName(firstName)
+        api.getBankAccountByName(firstName, lastName)
           .then(response => {
             if (response.data.length > 0) {
               this.matchedAccount = response.data[0];
@@ -202,7 +188,6 @@ export default {
             console.log("No account found yet", error);
             this.matchedAccount = null;
           });
-
     },
 
     atmTransaction() {
