@@ -204,15 +204,15 @@ export default {
 
     atmTransaction() {
       const now = new Date();
-      const options = {day: '2-digit', month: '2-digit', year: 'numeric'};
-      const formattedTime = now.toLocaleTimeString([], options);
+      const options = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+      const formattedDateTime = now.toLocaleString([], options);
 
       const transactionData = {
         userPerforming: this.user.id,
         amount: this.amountATM,
         accountTo: "",
         accountFrom: "",
-        time: formattedTime,
+        time: formattedDateTime,
         comment: "ATM Transaction",
       };
 
@@ -223,6 +223,7 @@ export default {
         transactionData.accountFrom = this.ATMSelection.value;
         transactionData.accountTo = this.ATMIban;
       }
+      console.log(transactionData);
       const isNotBelowAbsoluteLimit = (parseFloat(this.bankAccountFrom.balance) - parseFloat(this.amount)) >= this.bankAccountFrom.absoluteLimit;
 
       if (isNotBelowAbsoluteLimit) {
@@ -261,15 +262,15 @@ export default {
     },
     async performTransactionWithValidation() {
       const now = new Date();
-      const options = {day: '2-digit', month: '2-digit', year: 'numeric'};
-      const formattedTime = now.toLocaleTimeString([], options);
+      const options = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+      const formattedDateTime = now.toLocaleString([], options);
 
       const transactionData = {
         userPerforming: this.user.id,
         accountFrom: this.bankAccountFrom.value,
         accountTo: "",
         amount: this.amount,
-        time: formattedTime,
+        time: formattedDateTime,
         comment: this.text,
       };
       transactionData.accountTo = this.bankAccountTo;
