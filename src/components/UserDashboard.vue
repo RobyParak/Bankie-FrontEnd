@@ -127,36 +127,38 @@ export default {
     const datePicker = ref([]);
 
     const filteredCurrentTransactionsRows = computed(() => {
-      return transC.value.filter((row) =>
-        (row.comment.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
-          row.accountTo.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
-          row.accountFrom.toLowerCase().includes(transactionSearchText.value.toLowerCase())) &&
-        isWithinTimeRange(row.time)
-      );
-    });
+  return transC.value.filter((row) =>
+    (row.comment.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
+      row.accountTo.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
+      row.accountFrom.toLowerCase().includes(transactionSearchText.value.toLowerCase())) &&
+    isWithinTimeRange(row.time)
+  );
+});
 
-    const filteredSavingsTransactionsRows = computed(() => {
-      return transS.value.filter((row) =>
-        (row.comment.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
-          row.accountTo.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
-          row.accountFrom.toLowerCase().includes(transactionSearchText.value.toLowerCase())) &&
-        isWithinTimeRange(row.time)
-      );
-    });
+const filteredSavingsTransactionsRows = computed(() => {
+  return transS.value.filter((row) =>
+    (row.comment.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
+      row.accountTo.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
+      row.accountFrom.toLowerCase().includes(transactionSearchText.value.toLowerCase())) &&
+    isWithinTimeRange(row.time)
+  );
+});
 
-    const isWithinTimeRange = (time) => {
-      if (!datePicker.value.from || !datePicker.value.to) {
-        return true; // If from or to date is not set, consider all transactions within range
-      }
+const isWithinTimeRange = (time) => {
+  console.log(time);
+  const datePickerObject = JSON.parse(JSON.stringify(datePicker.value));
+  console.log(datePickerObject);
 
-      const selectedFromDate = new Date(datePicker.value.from.replace(/\//g, "-"));
-      const selectedToDate = new Date(datePicker.value.to.replace(/\//g, "-"));
-      const transactionTime = new Date(time);
+  if (!datePickerObject || !datePickerObject.from || !datePickerObject.to) {
+    return true; // If from or to date is not set, consider all transactions within range
+  }
 
-      return (
-        transactionTime >= selectedFromDate && transactionTime <= selectedToDate
-      );
-    };
+  const selectedFromDate = new Date(datePickerObject.from.replace(/\//g, "-"));
+  const selectedToDate = new Date(datePickerObject.to.replace(/\//g, "-"));
+  const transactionTime = new Date(time);
+
+  return transactionTime >= selectedFromDate && transactionTime <= selectedToDate;
+  };
     const columns = [
   { field: 'time', label: 'Date', format: (val) => formatDate(val) },
   { field: 'accountTo', label: 'Account To' },
