@@ -165,7 +165,6 @@ export default {
       ];
     const getAllTransactions = async (iban) => {
       try {
-        console.log(iban);
         const fromResponse = await api.getTransactionsByIbanFrom(iban);
         const toResponse = await api.getTransactionsByIbanTo(iban);
         const transactions = [...fromResponse.data, ...toResponse.data];
