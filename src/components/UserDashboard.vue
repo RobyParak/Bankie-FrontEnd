@@ -106,21 +106,23 @@
           </q-input>
           Model: {{ datePicker }}
         </div>
-        <q-date v-model="datePicker" range />
+        <q-date
+          v-model="datePicker" range
+          />
         </q-page>
       </q-splitter>
     </q-page-container>
   </q-layout>
 </template>
-
+<!-- @update:model-value="dateRange -->
 <script>
 import api from '../../axios.js'
 import jwtDecode from 'jwt-decode';
-import { computed, ref, onMounted, reactive, watch } from 'vue';
+import { computed, ref, onMounted, reactive } from 'vue';
 export default {
   name: 'UserDashboard',
   setup() {
-    // const datePicker =  ref({ from: '2023/06/08', to: '2023/06/12' })
+    const datePicker =  ref({ from: '2023/06/08', to: '2023/06/12' })
     const updateUser = reactive({});
     const splitterPosition = ref(0);
     const bankAccounts = ref([]);
@@ -131,14 +133,13 @@ export default {
     const transactionSearchText = ref('');
     const transC = ref([]);
     const transS = ref([]);
-    const datePicker = ref([]);
 
     const filteredCurrentTransactionsRows = computed(() => {
   return transC.value.filter((row) =>
     (row.comment.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
       row.accountTo.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
       row.accountFrom.toLowerCase().includes(transactionSearchText.value.toLowerCase())) &&
-    isWithinTimeRange(row.time)
+    isWithinTimeRange(row.dateTime)
   );
 });
 
@@ -147,25 +148,30 @@ const filteredSavingsTransactionsRows = computed(() => {
     (row.comment.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
       row.accountTo.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
       row.accountFrom.toLowerCase().includes(transactionSearchText.value.toLowerCase())) &&
-    isWithinTimeRange(row.time)
+    isWithinTimeRange(row.dateTime)
   );
 });
 
-const isWithinTimeRange = (time) => {
-  console.log(time);
-  const datePickerObject = JSON.parse(JSON.stringify(datePicker.value));
-  console.log(datePickerObject);
+const isWithinTimeRange = (dateTime) => {
+  console.log(dateTime);
+  const datePickerObject = datePicker.value;
+  console.log(datePicker.value);
 
   if (!datePickerObject || !datePickerObject.from || !datePickerObject.to) {
     return true; // If from or to date is not set, consider all transactions within range
   }
 
-  const selectedFromDate = new Date(datePickerObject.from.replace(/\//g, "-"));
-  const selectedToDate = new Date(datePickerObject.to.replace(/\//g, "-"));
-  const transactionTime = new Date(time);
+  const selectedFromDate = new Date(datePickerObject.from);
+  const selectedToDate = new Date(datePickerObject.to);
+  const transactionTime = new Date(dateTime);
 
-  return transactionTime >= selectedFromDate && transactionTime <= selectedToDate;
-  };
+  const formattedSelectedFromDate = new Date(selectedFromDate.getFullYear(), selectedFromDate.getMonth(), selectedFromDate.getDate());
+  const formattedSelectedToDate = new Date(selectedToDate.getFullYear(), selectedToDate.getMonth(), selectedToDate.getDate());
+  const formattedTransactionDate = new Date(transactionTime.getFullYear(), transactionTime.getMonth(), transactionTime.getDate());
+
+  return formattedTransactionDate >= formattedSelectedFromDate && formattedTransactionDate <= formattedSelectedToDate;
+};
+
     const columns = [
   { field: 'dateTime', label: 'Date', format: (val) => formatDate(val) },
   { field: 'accountTo', label: 'Account To' },
@@ -281,11 +287,6 @@ function formatDate(val) {
         console.error('Error updating user data:', error);
       }
     };
-    watch(datePicker, () => {
-      // Refresh the filtered transactions when the date range changes
-      transC.value = filteredCurrentTransactionsRows.value;
-      transS.value = filteredSavingsTransactionsRows.value;
-    }, { deep: true });
 
     onMounted(() => {
       fetchUserAndAccounts();
