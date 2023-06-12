@@ -69,32 +69,17 @@
                   val="deposit"
                   label="Deposit"
               />
-              <div class="q-px-sm">
+            <div class="q-px-sm">
               Your selection is: <strong>{{ radio }}</strong>
             </div>
-              <q-input standout="bg-indigo-11 text-white" v-model="text" label="Custom standout" />
-              <q-input standout="bg-indigo-11 text-white" v-model="text" label="Custom standout" />
-              <q-btn style="background: #507963; color: white; bottom: 0px;" label="Transfer" @click="createTransaction" />
-            </div>
+            <q-select standout="bg-indigo-11 text-white" v-model="ATMSelection" :options="ATMOptions" label="Select Account" />
+            <q-input filled v-model="amountATM" prefix="€" label="Amount" mask="#.##" fill-mask="0" input-class="text-right" reverse-fill-mask/>
+            <q-btn style="background: #507963; color: white;" label="Transfer" @click="atmTransaction" :disable="!isFormValidATM"/>
+          </div>
         </q-tab-panel>
       </q-tab-panels>
     </q-card>
 
-    <q-banner class="bg-primary text-white">
-      Unfortunately, the credit card did not go through, please try again.
-      <template v-slot:action>
-        <q-btn flat color="white" label="Dismiss" />
-        <q-btn flat color="white" label="Update Credit Card" />
-      </template>
-    </q-banner>
-
-    <q-banner class="bg-primary text-white">
-      Are you sure you want to make this transaction?
-      <template v-slot:action>
-        <q-btn flat color="#507963" label="Yes" />
-        <q-btn flat color="red" label="No" />
-      </template>
-    </q-banner>
   </div>
 </template>
 
@@ -323,7 +308,7 @@ export default {
                             console.error('Error performing transaction:', error);
                           });
                     } else {
-                      console.log('Nah, this is wrong mate.');
+                      console.log('Nah, this is wrong mate, need to be two current accounts to do this transaction.');
                     }
                   })
                   .catch(error => {
