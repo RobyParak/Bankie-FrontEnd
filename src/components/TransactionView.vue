@@ -176,34 +176,33 @@ export default {
     //could put debouncer to delay get request - no error every time user puts in letter
     searchBankAccountByName() {
       const [firstName, lastName] = this.searchByName.split(" ");
-      console.log(firstName);
-      if (firstName) {
+
+      api.getBankAccountByLastName(lastName)
+          .then(response => {
+            if (response.data.length > 0) {
+              this.matchedAccount = response.data[0];
+              return;
+            } else {
+              this.matchedAccount = null;
+            }
+          })
+          .catch(error => {
+            console.log("No account found yet", error);
+            this.matchedAccount = null;
+          });
+
         api.getBankAccountByFirstName(firstName)
           .then(response => {
             if (response.data.length > 0) {
               this.matchedAccount = response.data[0];
               return;
             }
-            api.getBankAccountByLastName(lastName)
-              .then(response => {
-                if (response.data.length > 0) {
-                  this.matchedAccount = response.data[0];
-                } else {
-                  this.matchedAccount = null;
-                }
-              })
-              .catch(error => {
-                console.log("No account found yet", error);
-                this.matchedAccount = null;
-              });
           })
           .catch(error => {
             console.log("No account found yet", error);
             this.matchedAccount = null;
           });
-      } else {
-        this.matchedAccount = null;
-      }
+
     },
 
     atmTransaction() {
