@@ -167,7 +167,7 @@ const isWithinTimeRange = (time) => {
   return transactionTime >= selectedFromDate && transactionTime <= selectedToDate;
   };
     const columns = [
-  { field: 'time', label: 'Date', format: (val) => formatDate(val) },
+  { field: 'dateTime', label: 'Date', format: (val) => formatDate(val) },
   { field: 'accountTo', label: 'Account To' },
   { field: 'accountFrom', label: 'Account From' },
   {
