@@ -122,7 +122,7 @@ import { computed, ref, onMounted, reactive } from 'vue';
 export default {
   name: 'UserDashboard',
   setup() {
-    const datePicker =  ref({ from: '2023/06/08', to: '2023/06/12' })
+    // const datePicker =  ref({ from: '2023/06/08', to: '2023/06/12' })
     const updateUser = reactive({});
     const splitterPosition = ref(0);
     const bankAccounts = ref([]);
@@ -138,8 +138,9 @@ export default {
   return transC.value.filter((row) =>
     (row.comment.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
       row.accountTo.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
-      row.accountFrom.toLowerCase().includes(transactionSearchText.value.toLowerCase())) &&
-    isWithinTimeRange(row.dateTime)
+      row.accountFrom.toLowerCase().includes(transactionSearchText.value.toLowerCase())) ||
+      row.dateTime.includes(transactionSearchText.value)
+      //  && isWithinTimeRange(row.dateTime)
   );
 });
 
@@ -147,30 +148,31 @@ const filteredSavingsTransactionsRows = computed(() => {
   return transS.value.filter((row) =>
     (row.comment.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
       row.accountTo.toLowerCase().includes(transactionSearchText.value.toLowerCase()) ||
-      row.accountFrom.toLowerCase().includes(transactionSearchText.value.toLowerCase())) &&
-    isWithinTimeRange(row.dateTime)
+      row.accountFrom.toLowerCase().includes(transactionSearchText.value.toLowerCase())) ||
+      row.dateTime.includes(transactionSearchText.value)
+      // && isWithinTimeRange(row.dateTime)
   );
 });
 
-const isWithinTimeRange = (dateTime) => {
+// const isWithinTimeRange = (dateTime) => {
 
-  const datePickerObject = datePicker.value;
-  console.log(datePicker.value);
+//   const datePickerObject = datePicker.value;
+//   console.log(datePicker.value);
 
-  if (!datePickerObject || !datePickerObject.from || !datePickerObject.to) {
-    return true; // If from or to date is not set, consider all transactions within range
-  }
+//   if (!datePickerObject || !datePickerObject.from || !datePickerObject.to) {
+//     return true; // If from or to date is not set, consider all transactions within range
+//   }
 
-  const selectedFromDate = new Date(datePickerObject.from);
-  const selectedToDate = new Date(datePickerObject.to);
-  const transactionTime = new Date(dateTime);
+//   const selectedFromDate = new Date(datePickerObject.from);
+//   const selectedToDate = new Date(datePickerObject.to);
+//   const transactionTime = new Date(dateTime);
 
-  const formattedSelectedFromDate = new Date(selectedFromDate.getFullYear(), selectedFromDate.getMonth(), selectedFromDate.getDate());
-  const formattedSelectedToDate = new Date(selectedToDate.getFullYear(), selectedToDate.getMonth(), selectedToDate.getDate());
-  const formattedTransactionDate = new Date(transactionTime.getFullYear(), transactionTime.getMonth(), transactionTime.getDate());
+//   const formattedSelectedFromDate = new Date(selectedFromDate.getFullYear(), selectedFromDate.getMonth(), selectedFromDate.getDate());
+//   const formattedSelectedToDate = new Date(selectedToDate.getFullYear(), selectedToDate.getMonth(), selectedToDate.getDate());
+//   const formattedTransactionDate = new Date(transactionTime.getFullYear(), transactionTime.getMonth(), transactionTime.getDate());
 
-  return formattedTransactionDate >= formattedSelectedFromDate && formattedTransactionDate <= formattedSelectedToDate;
-};
+//   return formattedTransactionDate >= formattedSelectedFromDate && formattedTransactionDate <= formattedSelectedToDate;
+// };
 
     const columns = [
   { field: 'dateTime', label: 'Date', format: (val) => formatDate(val) },
