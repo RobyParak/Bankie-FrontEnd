@@ -245,9 +245,16 @@ export default {
     });
 
 
+    function checkfortoken() {
+      if (localStorage.getItem('token') === null) {
+        window.location.href = '/login';
+      }
+    }
+
     onMounted(() => {
       getAllUsers();
       getAllBankAccounts();
+      checkfortoken();
     });
     return {
       bankAccountColumns,
