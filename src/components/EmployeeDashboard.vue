@@ -304,8 +304,6 @@ export default {
         typeId: 0,
       };
       this.createAccount(accountData);
-      //refresh the page
-      window.location.reload();
     },
     createCurrentAccount() {
       const accountData = {
@@ -317,7 +315,6 @@ export default {
         typeId: 1,
       };
       this.createAccount(accountData);
-      window.location.reload();
     },
     createAccount(accountData) {
       api.createAccount(accountData)
@@ -329,7 +326,7 @@ export default {
               api.updateUserById(this.selectedUser[0].id, this.selectedUser[0])
                   .then(response => {
                     console.log('User updated successfully:', response.data);
-                    this.getAllUsers();
+                    window.location.reload();
                   })
                   .catch(error => {
                     // Handle the error
