@@ -320,8 +320,7 @@ export default {
       api.createAccount(accountData)
           .then(() => {
             console.log('Bank Account created successfully:');
-            this.btndisable = true; // user should not be able to send a bunch of requests in one go so btn disabled 
-            if (this.selectedUser[0].role === 'User') {
+           if (this.selectedUser[0].role !== 'Employee') {
               this.selectedUser[0].role = 'Customer';
               api.updateUserById(this.selectedUser[0].id, this.selectedUser[0])
                   .then(response => {
