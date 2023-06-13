@@ -214,6 +214,10 @@ export default {
       transactionData.comment += " " + typeOfTransaction;
       console.log(transactionData);
 
+if (this.ATMSelection.statusId === 1) {
+        this.errorMessage = "You can't perform transactions on a inactive account";
+        return;
+}
         api.getBankAccountByIban(this.ATMSelection.value)
             .then(response => {
               this.ATMSelection = response.data[0];
@@ -253,16 +257,17 @@ export default {
       this.bankAccountFromOption = this.bankAccounts
           .filter(account => account.iban !== 'NL01INHO0000000001')
           .map(account => ({
-            label: `${account.typeId === 1 ? 'Current' : 'Savings'} - ${account.iban} ${formatter.format(account.balance)}`,
+            label: `${account.typeId === 1 ? 'Current' : 'Savings'} - ${account.iban} ${formatter.format(account.balance)} (${account.statusId === 0 ? 'Active' : 'Inactive'})`,
             value: account.iban
           }));
 
       this.ATMOptions = this.bankAccounts
           .filter(account => account.iban !== 'NL01INHO0000000001')
           .map(account => ({
-            label: `${account.typeId === 1 ? 'Current' : 'Savings'} - ${account.iban} ${formatter.format(account.balance)}`,
+            label: `${account.typeId === 1 ? 'Current' : 'Savings'} - ${account.iban} ${formatter.format(account.balance)} (${account.statusId === 0 ? 'Active' : 'Inactive'})`,
             value: account.iban
           }));
+
     },
     async performTransactionWithValidation() {
 
@@ -291,18 +296,22 @@ export default {
                     const isSameOwner = this.bankAccountFrom.ownerId === this.bankAccountTo.ownerId;
                     const isAccountFromActive = this.bankAccountFrom.statusId !== 1;
                     const isAccountToActive = this.bankAccountTo.statusId !== 1;
-                    const isSameType = this.bankAccountFrom.typeId === this.bankAccountTo.typeId;
+
+                    const isAccountFromCurrent = this.bankAccountFrom.typeId === 1;
+                    const isAccountToCurrent = this.bankAccountTo.typeId === 1;
+                    const isSameType = isAccountFromCurrent === isAccountToCurrent;
                     const isNotBelowAbsoluteLimit = (parseFloat(this.bankAccountFrom.balance) - parseFloat(this.amount)) >= this.bankAccountFrom.absoluteLimit;
 
-                    if (
-                        (isSameOwner && isAccountFromActive && isAccountToActive) ||
-                        (isSameType && this.bankAccountFrom.typeId === 1 && isAccountFromActive && isAccountToActive) &&
-                        (isNotBelowAbsoluteLimit)
-                    ) {
-                      this.performTransaction(transactionData);
+                    if (isAccountFromActive && isAccountToActive) {
+                      if (((isSameOwner) || (isSameType)) && isNotBelowAbsoluteLimit) {
+                        this.performTransaction(transactionData);
+                      } else {
+                        console.log("Cannot transfer from savings to current different owner");
+                        this.errorMessage ='Nah, this is wrong mate, need to be two current accounts to do this transaction.';
+                      }
                     } else {
-                      console.log("Cannot transfer from savings to current different owner");
-                      this.errorMessage ='Nah, this is wrong mate, need to be two current accounts to do this transaction.';
+                      console.log("Cannot transfer from inactive account");
+                      this.errorMessage = 'Nah, this is wrong mate, need to be two active accounts to do this transaction.';
                     }
                   })
                   .catch(error => {
