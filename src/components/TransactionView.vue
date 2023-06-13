@@ -212,15 +212,14 @@ export default {
         typeOfTransaction = "withdraw";
       }
       transactionData.comment += " " + typeOfTransaction;
-      console.log(transactionData);
 
-if (this.ATMSelection.statusId === 1) {
-        this.errorMessage = "You can't perform transactions on a inactive account";
-        return;
-}
         api.getBankAccountByIban(this.ATMSelection.value)
             .then(response => {
               this.ATMSelection = response.data[0];
+              if (this.ATMSelection.statusId === 1) {
+                this.errorMessage = "You can't perform transactions on a inactive account";
+                return;
+              }
               const isNotBelowAbsoluteLimit = (parseFloat(this.ATMSelection.balance) - parseFloat(this.amountATM)) >= this.ATMSelection.absoluteLimit;
 
               if (this.radio === 'withdraw' && isNotBelowAbsoluteLimit) {
