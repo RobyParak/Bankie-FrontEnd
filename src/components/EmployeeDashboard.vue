@@ -326,7 +326,6 @@ export default {
               api.updateUserById(this.selectedUser[0].id, this.selectedUser[0])
                   .then(response => {
                     console.log('User updated successfully:', response.data);
-                    window.location.reload();
                   })
                   .catch(error => {
                     // Handle the error
@@ -338,6 +337,7 @@ export default {
             // Handle the error
             console.error('Error creating bank account:', error);
           });
+      window.location.reload();
     },
 
     async getAllUsers() {
